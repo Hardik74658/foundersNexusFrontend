@@ -1,0 +1,17 @@
+:root {
+    --brand-color: 37, 99, 235; /* RGB values for #2563eb */
+}
+
+@import "tailwindcss";
+
+/* Custom classes for bg-brand and text-brand */
+.bg-brand {
+    background-color: rgb(var(--brand-color));
+}
+
+.text-brand {
+    color: rgb(var(--brand-color));
+}
+.border-brand {
+    border-color: rgb(var(--brand-color));
+}
