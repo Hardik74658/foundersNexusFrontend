@@ -22,7 +22,7 @@ const AuthLayout = ({ children, authentication }) => {
       }
       // For public routes: if user is logged in and on login/signup page, redirect to landing page.
       else if (!authentication && authStatus) {
-        if (location.pathname === '/login' || location.pathname === '/signup') {
+        if (location.pathname === '/login' || location.pathname === '/signup'|| location.pathname === '/resetpassword/:token'|| location.pathname === '/forgotpwd' ) {
           navigate('/');
         }
       }

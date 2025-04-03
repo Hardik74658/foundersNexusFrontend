@@ -2,7 +2,7 @@ import axios from "axios"
 
 export const login =  async (loginCredentials) =>  {
     try {
-        const res = await axios.post("/user/login/",loginCredentials)
+        const res = await axios.post("/users/login/",loginCredentials)
         if(res.status==200){
             return res
         }
