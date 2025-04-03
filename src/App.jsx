@@ -5,16 +5,48 @@ import { useDispatch } from 'react-redux';
 import { loggedIn, logout } from './redux/slices/authSlice.js';
 import { getCurrentUser } from './services/auth.js';
 import AuthLayout from './components/layout/AuthLayout.jsx';
-import { Login } from './components/Login';
+import  Login  from './components/Login';
 import Reg from './components/Regestration/Reg.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import StartupCreation from './components/Pages/StartupCreation.jsx';
-import { Profile } from './components/Pages/Profile.jsx';
+import  Profile  from './components/profile2/Profile2.jsx';
 import Posts from './components/Posts.jsx';
+import PostDetails from './components/PostDetails.jsx';
+import Signup from './components/Regestration/Signup.jsx';
+import ProfilePage from './components/profile2/Profile2.jsx';
+import EditProfile from './components/profile2/EditProfile.jsx';
+import ForgotPassword from './components/ForgotPassword.jsx';
+import ResetPassword from './components/ResetPassword.jsx';
 
 function App() {
   const dispatch = useDispatch();
 
+  const  user1 = {
+    "fullName": "Sheldon Lee Cooper",
+    "email": "sheldon2@bazinga.com",
+    "password": "$2b$12$naGEpkeQwT/htzycxVZPNuP/nk/QOnxbrt2sHttfbQheQ/QCpqi.G",
+    "age": 22,
+    "profilePicture": "",
+    "bio": "Hey There, I am Physicist Sheldon.",
+    "location": "texas, dallas",
+    "roleId": "67c6779e4e8d102569b9813f",
+    "followers": [],
+    "following": [],
+    "posts": [],
+    "currentStartup": null,
+    "isVerified": false,
+    "isActive": true,
+    "created_at": "2025-03-26T06:38:09.091000",
+    "updated_at": "2025-03-26T06:38:09.091000",
+    "_id": "67e3a0d18a1a4db84b341275",
+    "role": {
+        "_id": "67c6779e4e8d102569b9813f",
+        "name": "Investor",
+        "description": "Investing Role (Funds The Startups)"
+    },
+    "currentStartupData": null
+}
+  const currentUser=null;
   useEffect(() => {
     getCurrentUser()
       .then((response) => {
@@ -46,7 +78,7 @@ function App() {
         path="/signup"
         element={
           <AuthLayout authentication={false}>
-            <Reg />
+            <Signup />
           </AuthLayout>
         }
       />
@@ -84,6 +116,7 @@ function App() {
           </AuthLayout>
         }
       />
+      
       <Route
         path="/profile"
         element={
@@ -100,6 +133,56 @@ function App() {
           </AuthLayout>
         }
       />
+      
+      <Route
+        path="/posts/:postId"
+        element={
+          <AuthLayout authentication={true}>
+            <PostDetails />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/signup2"
+        element={
+          <AuthLayout authentication={true}>
+            <Signup />
+          </AuthLayout>
+        }
+      />
+        <Route
+          path="/user/editProfile"
+          element={
+            <AuthLayout authentication={true}>
+              <EditProfile user={user1}/>
+            </AuthLayout>
+          }
+        />
+      <Route
+        path="/user/:userId"
+        element={
+          <AuthLayout authentication={true}>
+            <ProfilePage />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/forgotpwd"
+        element={
+          <AuthLayout authentication={false}>
+            <ForgotPassword />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/resetpassword/:token"
+        element={
+          <AuthLayout authentication={false}>
+            <ResetPassword />
+          </AuthLayout>
+        }
+      />
+     
     </Routes>
   );
 }
