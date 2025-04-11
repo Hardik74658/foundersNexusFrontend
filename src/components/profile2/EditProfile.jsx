@@ -143,338 +143,361 @@ const EditProfile = ({ user }) => {
     }
   };
 
+  const [imageHover, setImageHover] = useState({
+    cover: false,
+    profile: false
+  });
+
+  const handleImageUpload = async (event, type) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Implement your image upload logic here
+      // For now, we'll just create a preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          [type === 'cover' ? 'coverImage' : 'profilePicture']: reader.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
-    <section className="relative pt-24 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 bg-white shadow">
-      {/* Cover Image */}
-      <img
-        src={formData.coverImage || fallbackCover}
-        alt="cover-image"
-        className="w-full absolute top-0 left-0 z-0 h-48 sm:h-56 lg:h-60 object-cover"
-      />
+    <section className="relative pt-24 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 bg-gray-50">
+      {/* Cover Image with overlay */}
+      <div 
+        className="w-full absolute top-0 left-0 z-0 h-48 sm:h-56 lg:h-60 cursor-pointer group"
+        onMouseEnter={() => setImageHover(prev => ({ ...prev, cover: true }))}
+        onMouseLeave={() => setImageHover(prev => ({ ...prev, cover: false }))}
+      >
+        <img
+          src={formData.coverImage || fallbackCover}
+          alt="cover"
+          className="w-full h-full object-cover"
+        />
+        <label className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${imageHover.cover ? 'bg-opacity-50' : 'bg-opacity-0'}`}>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleImageUpload(e, 'cover')}
+            className="hidden"
+          />
+          <span className={`text-white font-medium transition-opacity duration-300 ${imageHover.cover ? 'opacity-100' : 'opacity-0'}`}>
+            Click to Upload Cover Image
+          </span>
+        </label>
+      </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Avatar Section */}
-        <div className="flex items-center justify-center mb-4 sm:mb-6">
-          <img
-            src={formData.profilePicture || fallbackAvatar}
-            alt="user-avatar-image"
-            className="border-4 border-solid w-1/2 sm:w-1/3 lg:w-1/5 border-white rounded-full object-cover"
-          />
-        </div>
-
-        {/* Navigation & Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-4 sm:mb-6">
-          <ul className="flex items-center gap-3 sm:gap-5">
-            <li>
-              <span className="flex items-center gap-1 sm:gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="5"
-                  height="20"
-                  viewBox="0 0 5 20"
-                  fill="none"
-                >
-                  <path
-                    d="M4.12567 1.13672L1 18.8633"
-                    stroke="#E5E7EB"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12.5 14.0902L7.5 14.0902M2.5 9.09545V14.0902C2.5 15.6976 2.5 16.5013 2.98816 17.0006C3.47631 17.5 4.26198 17.5 5.83333 17.5H14.1667C15.738 17.5 16.5237 17.5 17.0118 17.0006C17.5 16.5013 17.5 15.6976 17.5 14.0902V10.9203C17.5 9.1337 17.5 8.24039 17.1056 7.48651C16.7112 6glo.73262 15.9846 6.2371 14.5313 5.24606L11.849 3.41681C10.9528 2.8056 10.5046 2.5 10 2.5C9.49537 2.5 9.04725 2.80561 8.151 3.41681L3.98433 6.25832C3.25772 6.75384 2.89442 7.0016 2.69721 7.37854C2.5 7.75548 2.5 8.20214 2.5 9.09545Z"
-                    stroke="black"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="font-medium text-base sm:text-lg leading-7 text-gray-900">
-                  Edit Profile
+        {/* Profile Header Card with Shadow */}
+        <div className="rounded-xl pb-8 m-12">
+          {/* Profile Picture */}
+          <div className="flex items-center justify-center mb-4 sm:mb-6 -mt-16">
+            <div 
+              className="relative cursor-pointer group"
+              onMouseEnter={() => setImageHover(prev => ({ ...prev, profile: true }))}
+              onMouseLeave={() => setImageHover(prev => ({ ...prev, profile: false }))}
+            >
+              <img
+                src={formData.profilePicture || fallbackAvatar}
+                alt="profile"
+                className="border-4 border-solid w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 border-white rounded-full object-cover"
+              />
+              <label className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity duration-300 ${imageHover.profile ? 'bg-opacity-50' : 'bg-opacity-0'}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'profile')}
+                  className="hidden"
+                />
+                <span className={`text-white text-sm text-center font-medium transition-opacity duration-300 ${imageHover.profile ? 'opacity-100' : 'opacity-0'}`}>
+                  Update Profile Picture
                 </span>
-              </span>
-            </li>
-          </ul>
-        </div>
+              </label>
+            </div>
+          </div>
 
-        {/* Full Name */}
-        <div className="text-center mb-2">
-          {editingField === 'fullName' ? (
+          {/* Name and Bio - Inline Editable */}
+          <div className="text-center mb-6 px-4">
             <input
               type="text"
               value={formData.fullName}
               onChange={(e) => handleInputChange(e, 'fullName')}
-              onBlur={handleBlur}
-              autoFocus
-              className="text-2xl sm:text-3xl lg:text-3xl font-bold text-gray-900 w-full text-center border rounded"
+              className="text-2xl sm:text-3xl lg:text-3xl font-bold text-gray-900 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none"
+              placeholder="Your Name"
             />
-          ) : (
-            <h3
-              onDoubleClick={() => handleDoubleClick('fullName')}
-              className="text-2xl sm:text-3xl lg:text-3xl font-bold text-gray-900 cursor-pointer"
-            >
-              {formData.fullName || 'Jenny Wilson'}
-            </h3>
-          )}
-        </div>
-
-        {/* Bio */}
-        <div className="text-center mb-6">
-          {editingField === 'bio' ? (
             <textarea
               value={formData.bio}
               onChange={(e) => handleInputChange(e, 'bio')}
-              onBlur={handleBlur}
-              autoFocus
-              className="text-sm sm:text-base lg:text-base text-gray-500 w-full text-center border rounded"
+              className="mt-2 w-full text-sm sm:text-base lg:text-base text-gray-500 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none resize-none"
+              placeholder="Write something about yourself..."
+              rows="2"
             />
-          ) : (
-            <p
-              onDoubleClick={() => handleDoubleClick('bio')}
-              className="text-sm sm:text-base lg:text-base text-gray-500 cursor-pointer"
-            >
-              {formData.bio || 'A social media influencer and singer'}
-            </p>
-          )}
-        </div>
-
-        {/* Followers and Following */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 my-6">
-          <div className="px-4 py-3 bg-indigo-100 rounded-2xl text-center">
-            <p className="text-lg sm:text-xl font-semibold text-indigo-800">Followers</p>
-            <p className="text-base sm:text-lg text-indigo-800">
-              {formData.followers ? formData.followers.length : 0}
-            </p>
-          </div>
-          <div className="px-4 py-3 bg-indigo-100 rounded-2xl text-center">
-            <p className="text-lg sm:text-xl font-semibold text-indigo-800">Following</p>
-            <p className="text-base sm:text-lg text-indigo-800">
-              {formData.following ? formData.following.length : 0}
-            </p>
           </div>
         </div>
 
-        {/* Additional User Details */}
-        <div className="mt-8">
-          <h4 className="text-xl font-semibold mb-4 text-gray-900">Personal Information</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              {editingField === 'email' ? (
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange(e, 'email')}
-                  onBlur={handleBlur}
-                  autoFocus
-                  className="mt-1 block w-full border rounded"
-                />
-              ) : (
-                <p
-                  onDoubleClick={() => handleDoubleClick('email')}
-                  className="mt-1 text-sm text-gray-900 cursor-pointer"
-                >
-                  {formData.email || 'Not set'}
-                </p>
-              )}
-            </div>
+        {/* Role-Specific Details Section with Different Background */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
+          <div className="border-b border-gray-200 pb-4 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {user.role === 'founder' ? 'Founder Details' : 'Investor Details'}
+            </h2>
+          </div>
 
-            {/* Age */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Age</label>
-              {editingField === 'age' ? (
-                <input
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => handleInputChange(e, 'age')}
-                  onBlur={handleBlur}
-                  autoFocus
-                  className="mt-1 block w-full border rounded"
-                />
-              ) : (
-                <p
-                  onDoubleClick={() => handleDoubleClick('age')}
-                  className="mt-1 text-sm text-gray-900 cursor-pointer"
-                >
-                  {formData.age || 'Not set'}
-                </p>
-              )}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {user.role === 'founder' ? (
+              // Founder Details
+              <div className="space-y-6 col-span-2">
+                {/* Education Background */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Educational Background</label>
+                  {formData.founderDetails.educationalBackground.map((edu, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={edu}
+                        onChange={(e) => updateListItem('educationalBackground', index, e.target.value, 'founderDetails')}
+                        className="flex-1 p-2 border rounded hover:border-gray-300 focus:border-indigo-600 focus:outline-none"
+                        placeholder="Enter education details"
+                      />
+                      <button
+                        onClick={() => removeListItem('educationalBackground', index, 'founderDetails')}
+                        className="px-3 py-1 text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('educationalBackground', 'founderDetails')}
+                    className="mt-2 text-indigo-600 hover:text-indigo-700"
+                  >
+                    + Add Education
+                  </button>
+                </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Location</label>
-              {editingField === 'location' ? (
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange(e, 'location')}
-                  onBlur={handleBlur}
-                  autoFocus
-                  className="mt-1 block w-full border rounded"
-                />
-              ) : (
-                <p
-                  onDoubleClick={() => handleDoubleClick('location')}
-                  className="mt-1 text-sm text-gray-900 cursor-pointer"
-                >
-                  {formData.location || 'Not set'}
-                </p>
-              )}
-            </div>
+                {/* Skills */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Skills</label>
+                  {formData.founderDetails.skills.map((skill, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={skill}
+                        onChange={(e) => updateListItem('skills', index, e.target.value, 'founderDetails')}
+                        className="flex-1 p-2 border rounded"
+                        placeholder="Enter skill"
+                      />
+                      <button
+                        onClick={() => removeListItem('skills', index, 'founderDetails')}
+                        className="px-3 py-1 text-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('skills', 'founderDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Skill
+                  </button>
+                </div>
+
+                {/* Work Experience */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Work Experience</label>
+                  {formData.founderDetails.workExperience.map((exp, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={exp}
+                        onChange={(e) => updateListItem('workExperience', index, e.target.value, 'founderDetails')}
+                        className="flex-1 p-2 border rounded"
+                        placeholder="Enter work experience"
+                      />
+                      <button
+                        onClick={() => removeListItem('workExperience', index, 'founderDetails')}
+                        className="px-3 py-1 text-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('workExperience', 'founderDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Experience
+                  </button>
+                </div>
+
+                {/* Certifications */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Certifications</label>
+                  {formData.founderDetails.certifications.map((cert, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={cert}
+                        onChange={(e) => updateListItem('certifications', index, e.target.value, 'founderDetails')}
+                        className="flex-1 p-2 border rounded"
+                        placeholder="Enter certification"
+                      />
+                      <button
+                        onClick={() => removeListItem('certifications', index, 'founderDetails')}
+                        className="px-3 py-1 text-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('certifications', 'founderDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Certification
+                  </button>
+                </div>
+
+                {/* Portfolio Links */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Portfolio Links</label>
+                  {formData.founderDetails.portfolioLinks.map((link, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="url"
+                        value={link}
+                        onChange={(e) => updateListItem('portfolioLinks', index, e.target.value, 'founderDetails')}
+                        className="flex-1 p-2 border rounded"
+                        placeholder="Enter portfolio link"
+                      />
+                      <button
+                        onClick={() => removeListItem('portfolioLinks', index, 'founderDetails')}
+                        className="px-3 py-1 text-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('portfolioLinks', 'founderDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Portfolio Link
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Investor Details
+              <div className="space-y-6 col-span-2">
+                {/* Investor Type */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Investor Type</label>
+                  <select
+                    value={formData.investorDetails.investor_type}
+                    onChange={(e) => handleInputChange(e, 'investor_type', 'investorDetails')}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="">Select Type</option>
+                    <option value="Angel">Angel</option>
+                    <option value="VC">VC</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Government">Government</option>
+                  </select>
+                </div>
+
+                {/* Funds Available */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Funds Available</label>
+                  <input
+                    type="number"
+                    value={formData.investorDetails.funds_available}
+                    onChange={(e) => handleInputChange(e, 'funds_available', 'investorDetails')}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter available funds"
+                  />
+                </div>
+
+                {/* Investment Interests */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Investment Interests</label>
+                  {formData.investorDetails.investment_interests.map((interest, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={interest}
+                        onChange={(e) => updateListItem('investment_interests', index, e.target.value, 'investorDetails')}
+                        className="flex-1 p-2 border rounded"
+                        placeholder="Enter investment interest"
+                      />
+                      <button
+                        onClick={() => removeListItem('investment_interests', index, 'investorDetails')}
+                        className="px-3 py-1 text-red-500"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('investment_interests', 'investorDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Interest
+                  </button>
+                </div>
+
+                {/* Previous Investments */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Previous Investments</label>
+                  {formData.investorDetails.previous_investments.map((investment, index) => (
+                    <div key={index} className="grid grid-cols-3 gap-2 mt-2">
+                      <input
+                        type="text"
+                        value={investment.startupName}
+                        onChange={(e) => updateListItem('previous_investments', index, 
+                          { ...investment, startupName: e.target.value }, 'investorDetails')}
+                        className="p-2 border rounded"
+                        placeholder="Startup Name"
+                      />
+                      <input
+                        type="number"
+                        value={investment.amount}
+                        onChange={(e) => updateListItem('previous_investments', index,
+                          { ...investment, amount: e.target.value }, 'investorDetails')}
+                        className="p-2 border rounded"
+                        placeholder="Amount"
+                      />
+                      <div className="flex gap-2">
+                        <input
+                          type="date"
+                          value={investment.date}
+                          onChange={(e) => updateListItem('previous_investments', index,
+                            { ...investment, date: e.target.value }, 'investorDetails')}
+                          className="flex-1 p-2 border rounded"
+                        />
+                        <button
+                          onClick={() => removeListItem('previous_investments', index, 'investorDetails')}
+                          className="px-3 py-1 text-red-500"
+                        >
+                          X
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => addListItem('previous_investments', 'investorDetails')}
+                    className="mt-2 text-indigo-600"
+                  >
+                    + Add Investment
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {/* Role-Specific Details */}
-        {user.role === 'founder' && (
-          <div className="mt-8">
-            <h4 className="text-xl font-semibold mb-4 text-gray-900">Founder Details</h4>
-            {/* Educational Background */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Educational Background</label>
-              {formData.founderDetails.educationalBackground.map((item, index) => (
-                <div key={index} className="flex items-center mt-1">
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) =>
-                      updateListItem('educationalBackground', index, e.target.value, 'founderDetails')
-                    }
-                    className="block w-full border rounded"
-                  />
-                  <button
-                    onClick={() => removeListItem('educationalBackground', index, 'founderDetails')}
-                    className="ml-2 text-red-500"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => addListItem('educationalBackground', 'founderDetails')}
-                className="mt-2 text-blue-500"
-              >
-                Add Education
-              </button>
-            </div>
-
-            {/* Skills */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Skills</label>
-              {formData.founderDetails.skills.map((item, index) => (
-                <div key={index} className="flex items-center mt-1">
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) => updateListItem('skills', index, e.target.value, 'founderDetails')}
-                    className="block w-full border rounded"
-                  />
-                  <button
-                    onClick={() => removeListItem('skills', index, 'founderDetails')}
-                    className="ml-2 text-red-500"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => addListItem('skills', 'founderDetails')}
-                className="mt-2 text-blue-500"
-              >
-                Add Skill
-              </button>
-            </div>
-
-            {/* Add similar blocks for workExperience, certifications, portfolioLinks */}
-          </div>
-        )}
-
-        {user.role === 'investor' && (
-          <div className="mt-8">
-            <h4 className="text-xl font-semibold mb-4 text-gray-900">Investor Details</h4>
-            {/* Investor Type */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Investor Type</label>
-              {editingField === 'investor_type' ? (
-                <input
-                  type="text"
-                  value={formData.investorDetails.investor_type}
-                  onChange={(e) => handleInputChange(e, 'investor_type', 'investorDetails')}
-                  onBlur={handleBlur}
-                  autoFocus
-                  className="mt-1 block w-full border rounded"
-                />
-              ) : (
-                <p
-                  onDoubleClick={() => handleDoubleClick('investor_type')}
-                  className="mt-1 text-sm text-gray-900 cursor-pointer"
-                >
-                  {formData.investorDetails.investor_type || 'Not set'}
-                </p>
-              )}
-            </div>
-
-            {/* Funds Available */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Funds Available</label>
-              {editingField === 'funds_available' ? (
-                <input
-                  type="number"
-                  value={formData.investorDetails.funds_available}
-                  onChange={(e) => handleInputChange(e, 'funds_available', 'investorDetails')}
-                  onBlur={handleBlur}
-                  autoFocus
-                  className="mt-1 block w-full border rounded"
-                />
-              ) : (
-                <p
-                  onDoubleClick={() => handleDoubleClick('funds_available')}
-                  className="mt-1 text-sm text-gray-900 cursor-pointer"
-                >
-                  {formData.investorDetails.funds_available || 'Not set'}
-                </p>
-              )}
-            </div>
-
-            {/* Investment Interests */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Investment Interests</label>
-              {formData.investorDetails.investment_interests.map((item, index) => (
-                <div key={index} className="flex items-center mt-1">
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) =>
-                      updateListItem('investment_interests', index, e.target.value, 'investorDetails')
-                    }
-                    className="block w-full border rounded"
-                  />
-                  <button
-                    onClick={() => removeListItem('investment_interests', index, 'investorDetails')}
-                    className="ml-2 text-red-500"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={() => addListItem('investment_interests', 'investorDetails')}
-                className="mt-2 text-blue-500"
-              >
-                Add Interest
-              </button>
-            </div>
-
-            {/* Add similar block for previous_investments */}
-          </div>
-        )}
 
         {/* Save Button */}
         <div className="mt-8 flex justify-end">
