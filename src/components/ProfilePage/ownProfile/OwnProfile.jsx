@@ -1,36 +1,40 @@
 import React from 'react';
+import CreatePostModal from '../../Posts/CreatePostModal';
 
-// Default user data for demonstration (replace with actual props in your app)
-const defaultUserData = {
-  fullName: "John Doe",
-  email: "john.doe@example.com",
-  password: "********", // Not displayed
-  age: 30,
-  profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/profile.jpg",
-  bio: "A passionate developer.",
-  location: "San Francisco, CA",
-  roleId: "Developer",
-  followers: [
-    { name: "Jane Smith", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
-    { name: "Mike Johnson", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
-  ],
-  following: [
-    { name: "Alice Brown", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
-    { name: "Bob Green", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
-  ],
-  posts: [
-    { title: "First Post", content: "This is my first post." },
-    { title: "Second Post", content: "This is my second post." },
-  ],
-  currentStartup: "Tech Innovate",
-};
+// // Default user data for demonstration (replace with actual props in your app)
+// const defaultUserData = {
+//   fullName: "John Doe",
+//   email: "john.doe@example.com",
+//   password: "********", // Not displayed
+//   age: 30,
+//   profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/profile.jpg",
+//   bio: "A passionate developer.",
+//   location: "San Francisco, CA",
+//   roleId: "Developer",
+//   followers: [
+//     { name: "Jane Smith", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
+//     { name: "Mike Johnson", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
+//   ],
+//   following: [
+//     { name: "Alice Brown", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
+//     { name: "Bob Green", profilePicture: "https://vojislavd.com/ta-template-demo/assets/img/connections/connection1.jpg" },
+//   ],
+//   posts: [
+//     { title: "First Post", content: "This is my first post." },
+//     { title: "Second Post", content: "This is my second post." },
+//   ],
+//   currentStartup: "Tech Innovate",
+// };
 
 // ProfileHeader: Displays profile picture, name, role, and location (no buttons)
 function ProfileHeader({ user }) {
+  const [showPostModal, setShowPostModal] = useState(false);
   return (
     <div className="bg-white rounded-lg shadow-xl pb-8 relative">
       <div className="w-full h-[250px]">
-        <img src="https://vojislavd.com/ta-template-demo/assets/img/profile-background.jpg" className="w-full h-full rounded-tl-lg rounded-tr-lg" alt="Background" />
+        <img 
+        src={user.coverImage || "https://vojislavd.com/ta-template-demo/assets/img/profile-background.jpg"}
+        className="w-full h-full rounded-tl-lg rounded-tr-lg" alt="Background" />
       </div>
       <div className="flex flex-col items-center -mt-20">
         <img
@@ -185,6 +189,17 @@ function OwnProfile({ user = defaultUserData }) {
           <AboutSection bio={user.bio} />
           <FollowersSection followers={user.followers} />
           <FollowingsSection following={user.following} />
+        
+      {/* Create Post Modal */}
+      <CreatePostModal
+        userId={user._id}
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onPostCreated={() => {
+          // Optional: refresh posts or give toast
+          setShowPostModal(false);
+        }}
+      />
           <PostsSection posts={user.posts} />
         </div>
       </div>

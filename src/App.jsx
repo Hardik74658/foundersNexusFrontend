@@ -17,6 +17,7 @@ import ProfilePage from './components/profile2/Profile2.jsx';
 import EditProfile from './components/profile2/EditProfile.jsx';
 import ForgotPassword from './components/ForgotPassword.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
+import Users from './components/Pages/Users.jsx';
 
 function App() {
   const dispatch = useDispatch();
@@ -182,7 +183,15 @@ function App() {
           </AuthLayout>
         }
       />
-     
+      <Route
+        path="/users"
+        element={
+          <AuthLayout authentication={true}>
+            <Users />
+          </AuthLayout>
+        }
+      />
+      
     </Routes>
   );
 }

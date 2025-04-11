@@ -33,7 +33,8 @@ const PostDetails = () => {
         setLikes(response.data.likes || []);
         setComments(response.data.commentsData || []);
       } catch (err) {
-        setError('Failed to fetch post');
+        console.error('Error fetching post:', err.response?.data || err.message);
+        setError(err.response?.data?.detail || 'Failed to fetch post');
       } finally {
         setLoading(false);
       }
@@ -47,13 +48,38 @@ const PostDetails = () => {
     }
   }, [postId]);
 
-  const handleLike = () => {
-    if (likes.includes(currentUserData._id)) {
-      setLikes(likes.filter((id) => id !== currentUserData._id));
-      // Optionally call API to unlike
-    } else {
-      setLikes([...likes, currentUserData._id]);
-      // Optionally call API to like
+  const handleLike = async () => {
+    const userId = currentUserData._id;
+    if (!userId) return;
+
+    // Optimistic update for likes
+    setPost((prevPost) => {
+      const currentLikes = prevPost.likes || [];
+      let updatedLikes;
+      if (currentLikes.includes(userId)) {
+        updatedLikes = currentLikes.filter((id) => id !== userId);
+      } else {
+        updatedLikes = [...currentLikes, userId];
+      }
+      return { ...prevPost, likes: updatedLikes };
+    });
+
+    try {
+      const response = await axios.post(`http://127.0.0.1:8000/posts/${postId}/like/${userId}`);
+      console.log(response.data.message);
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      // Optionally revert the optimistic update here if necessary
+      setPost((prevPost) => {
+        const currentLikes = prevPost.likes || [];
+        let revertedLikes;
+        if (currentLikes.includes(userId)) {
+          revertedLikes = currentLikes.filter((id) => id !== userId);
+        } else {
+          revertedLikes = [...currentLikes, userId];
+        }
+        return { ...prevPost, likes: revertedLikes };
+      });
     }
   };
 
@@ -121,7 +147,7 @@ const PostDetails = () => {
               className="flex items-center gap-1 bg-indigo-600 text-white px-4 py-2 rounded-full hover:bg-indigo-700 transition"
             >
               <HeartIcon className="w-5 h-5" />
-              <span>{likes.length}</span>
+              <span>{(post?.likes || []).length}</span>
             </button>
             <button className="flex items-center gap-1 border border-gray-300 text-gray-600 px-4 py-2 rounded-full">
               <ChatBubbleBottomCenterTextIcon className="w-5 h-5" />

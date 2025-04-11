@@ -78,27 +78,61 @@ export default function Reg() {
         email: data.email,
         password: data.password,
         age: data.age || null,
-        profilePicture: '', // Assuming profilePicture is not part of the form
+        profilePictureFile: data.profilePic || null, // Include profile picture file
+        coverImageFile: data.coverImage || null, // Include cover image file
         bio: data.bio,
         location: `${data.city}, ${data.state}`,
         roleId: data.role === "founder" ? "67c677834e8d102569b9813e" : "67c6779e4e8d102569b9813f",
       };
 
       console.log('User Details:', userDetails);
-
+      let userResponse = null;
       let userId = null;
       try {
-        const userResponse = await axios.post('http://localhost:8000/users', userDetails);
-        userId = userResponse.data.user;
+        const formData = new FormData();
+        formData.append("fullName", userDetails.fullName);
+        formData.append("email", userDetails.email);
+        formData.append("password", userDetails.password);
+        formData.append("age", userDetails.age || ""); // Send empty string if not provided
+        formData.append("roleId", userDetails.roleId);
+        formData.append("bio", userDetails.bio || "");
+        formData.append("location", userDetails.location || "");
+
+        // Append files individually as File objects
+        if (userDetails.profilePictureFile && userDetails.profilePictureFile[0]) {
+          formData.append("profilePicture", userDetails.profilePictureFile[0]);
+        }
+        if (userDetails.coverImageFile && userDetails.coverImageFile[0]) {
+          formData.append("coverPicture", userDetails.coverImageFile[0]);
+        }
+
+        // Debugging: Log FormData content
+        for (let [key, value] of formData.entries()) {
+          console.log(`${key}:`, value);
+        }
+
+        userResponse = await axios.post(
+          "http://localhost:8000/users", // Ensure this endpoint is correct
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        userId = userResponse.data.user; // Ensure userId is extracted correctly
         console.log("User Id:", userId);
       } catch (err) {
-        console.log("Error during user creation:", err);
+        console.error("Error during user creation:", err.response?.data || err.message);
+        setError("Failed to create user. Please check your input and try again.");
+        return; // Exit early if user creation fails
       }
 
       let founderId = null;
       if (data.role === 'founder') {
         let founderDetails = {
-          userId: userId, // updated with created user id
+          userId: userId, // Ensure userId is passed here
           educationalBackground: data.education || [],
           skills: data.skills || [],
           workExperience: data.workExperience || [],
@@ -221,6 +255,11 @@ export default function Reg() {
                   setUserData={setUserData}
                   showPassword={showPassword}
                   setShowPassword={setShowPassword}
+                  autocomplete={{
+                    username: "username",
+                    email: "email",
+                    password: "new-password",
+                  }}
                 />
               )}
               {step === 2 && (

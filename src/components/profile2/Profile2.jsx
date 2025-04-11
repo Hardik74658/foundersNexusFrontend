@@ -3,11 +3,11 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import ProfileHeader from './ProfileHeader';
 import PostCard from '../PostCard.jsx';
+import CreatePostModal from '../Posts/CreatePostModal';
 import { useSelector } from 'react-redux';
 
 const ProfilePage = () => {
   const { userId } = useParams();
-  // Get current logged-in user from Redux (or fallback to localStorage)
   const currentUser = useSelector((state) => state.auth.userData) || {
     _id: localStorage.getItem('userId'),
     fullName: 'Current User',
@@ -19,6 +19,7 @@ const ProfilePage = () => {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [error, setError] = useState(null);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   // Fetch profile details
   useEffect(() => {
@@ -63,7 +64,6 @@ const ProfilePage = () => {
     const userId = localStorage.getItem('userId');
     if (!userId) return;
 
-    // Optimistic update for likes
     setPosts((prevPosts) =>
       prevPosts.map((post) => {
         if (post._id === postId) {
@@ -88,6 +88,24 @@ const ProfilePage = () => {
     }
   };
 
+  const openPostModal = () => {
+    setIsPostModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsPostModalOpen(false);
+  };
+
+  const handlePostCreated = () => {
+    setIsPostModalOpen(false);
+    // Optionally, refresh posts after creating a new one
+    setLoadingPosts(true);
+    axios.get(`http://localhost:8000/posts/user/${userId}`).then((response) => {
+      setPosts(response.data);
+      setLoadingPosts(false);
+    });
+  };
+
   if (loadingProfile) {
     return <div className="text-center py-10">Loading profile...</div>;
   }
@@ -98,7 +116,15 @@ const ProfilePage = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Profile Header */}
-      {profile && <ProfileHeader user={profile} />}
+      {profile && <ProfileHeader user={profile} openPostModal={openPostModal} />}
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        userId={currentUser._id}
+        isOpen={isPostModalOpen}
+        onClose={closePostModal}
+        onPostCreated={handlePostCreated}
+      />
 
       {/* Optional: Current Startup Section */}
       {profile && profile.currentStartup && (

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const ProfileHeader = ({ user }) => {
+const ProfileHeader = ({ user, openPostModal  }) => {
   const navigate = useNavigate();
   // Current logged-in user's id from localStorage
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -137,7 +137,7 @@ const ProfileHeader = ({ user }) => {
                   Edit Profile
                 </button>
                 <button
-                  onClick={() => console.log('Create New Post clicked')}
+                  onClick={openPostModal} // Ensure this calls the passed function
                   className="rounded-full border border-solid border-indigo-600 bg-indigo-600 py-2 px-3 sm:py-3 sm:px-4 text-sm sm:text-base font-semibold text-white whitespace-nowrap shadow transition-all duration-500 hover:shadow-gray-200 hover:bg-indigo-700 hover:border-indigo-700"
                 >
                   Create New Post
@@ -326,6 +326,7 @@ const ProfileHeader = ({ user }) => {
 
 ProfileHeader.propTypes = {
   user: PropTypes.object.isRequired,
+  openPostModal: PropTypes.func.isRequired,
 };
 
 export default ProfileHeader;
