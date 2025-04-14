@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 // Fix the image import
 import teamMeeting from '../../assets/team-meeting.png';
 import axios from 'axios';
@@ -11,9 +12,11 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 const StartupDetails = () => {
   const { id } = useParams(); // Get startup ID from URL
+  const navigate = useNavigate(); // Add navigation hook
   const [startupData, setStartupData] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null); // Track hovered person
+  const currentUser = useSelector((state) => state.auth.user); // Get current user from Redux store
 
   useEffect(() => {
     axios
@@ -118,12 +121,37 @@ const StartupDetails = () => {
     animation: 'tooltipBounce 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55)'
   };
 
+  // Function to check if current user is a founder of this startup
+  const isUserFounder = () => {
+    if (!startupData || !currentUser) return false;
+    
+    // Check if user is in founders list
+    const founderId = startupData.founders?.find(founder => {
+      if (typeof founder === 'object') {
+        return founder._id === currentUser.id;
+      }
+      return founder === currentUser.id;
+    });
+    
+    return !!founderId;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 p-4">
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-sm p-6">
         {/* Navigation */}
-        <div className="flex justify-end mb-8 text-gray-600">
-          <div className="flex space-x-6">
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center">
+            {isUserFounder() && (
+              <button
+                onClick={() => navigate(`/startup/edit/${id}`)}
+                className="rounded-md bg-indigo-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none"
+              >
+                Edit Startup
+              </button>
+            )}
+          </div>
+          <div className="flex space-x-6 text-gray-600">
             <a href="#" className="hover:text-gray-900">Our Startups</a>
             <a href="#" className="hover:text-gray-900">Founder Hub</a>
             <a href="#" className="hover:text-gray-900">Market Insights</a>
@@ -486,7 +514,7 @@ const StartupDetails = () => {
           </div>
           
           {/* Custom animation style */}
-          <style jsx>{`
+          <style>{`
             @keyframes tooltipBounce {
               0%, 100% { transform: translateY(0) translateX(-50%); }
               20% { transform: translateY(-10px) translateX(-50%); }
