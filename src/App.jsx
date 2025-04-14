@@ -18,6 +18,7 @@ import EditProfile from './components/profile2/EditProfile.jsx';
 import ForgotPassword from './components/ForgotPassword.jsx';
 import ResetPassword from './components/ResetPassword.jsx';
 import Users from './components/Pages/Users.jsx';
+import StartupDetails from './components/Pages/StartupDetails.jsx';
 
 function App() {
   const dispatch = useDispatch();
@@ -117,7 +118,14 @@ function App() {
           </AuthLayout>
         }
       />
-      
+      <Route
+        path="/startup/:id"
+        element={
+          <AuthLayout authentication={true}>
+            <StartupDetails />
+          </AuthLayout>
+        }
+      />
       <Route
         path="/profile"
         element={

@@ -13,6 +13,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   // Local state to store fetched user info from API (/users/{userId})
   const [userInfo, setUserInfo] = useState(null);
 
+  // Local state to store fetched startup info
+  const [currentStartup, setCurrentStartup] = useState(null);
+
   // Fetch current user's data if userId is available
   useEffect(() => {
     const userId = storedUser?.id || localUserId;
@@ -27,6 +30,21 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
         });
     }
   }, [storedUser, localUserId]);
+
+  // Fetch current startup details if userInfo.currentStartup exists
+  useEffect(() => {
+    if (userInfo?.currentStartup) {
+      axios
+        .get(`http://localhost:8000/startups/${userInfo.currentStartup}`)
+        .then((response) => {
+          setCurrentStartup(response.data);
+          console.log('Current startup details:', response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching current startup details:', error);
+        });
+    }
+  }, [userInfo]);
 
   // onLogout function as provided
   const onLogout = () => {
@@ -56,16 +74,24 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       name: 'Users', 
       path: '/users', 
       icon: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z'
+    },
+    { 
+      name: 'Chat',
+      path: '/chat',
+      icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
     }
   ];
 
-  // If current user has a currentStartup, add it as a navigation option
-  if (userInfo && userInfo.currentStartup) {
-    navItems.push({
-      name: userInfo.currentStartup,
-      path: '/startup',
-      icon: 'M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17z'
-    });
+  // If current startup details are available, replace the "Startup" navigation option
+  if (currentStartup) {
+    const startupNavIndex = navItems.findIndex(item => item.name === 'Startup');
+    if (startupNavIndex !== -1) {
+      navItems[startupNavIndex] = {
+        name: currentStartup.startup_name,
+        path: `/startup/${currentStartup._id}`, // Adjust path to include startup ID
+        icon: currentStartup.logo_url || 'M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17z'
+      };
+    }
   }
 
   // Handle the role display: if role is an object, show its 'name' property
@@ -101,6 +127,26 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           <p className="text-xs text-gray-500">
             {roleDisplay}
           </p>
+          {currentStartup && (
+            <div className="mt-4 text-sm text-gray-600">
+              <p><strong>Startup:</strong> {currentStartup.startup_name}</p>
+              <p><strong>Description:</strong> {currentStartup.description || "N/A"}</p>
+              <p><strong>Industry:</strong> {currentStartup.industry || "N/A"}</p>
+              {currentStartup.website && (
+                <p>
+                  <strong>Website:</strong>{' '}
+                  <a
+                    href={currentStartup.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-500 underline"
+                  >
+                    {currentStartup.website}
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Search Bar */}
@@ -129,9 +175,13 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               to={item.path}
               className="flex items-center space-x-2 py-3 px-4 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white rounded-2xl transition duration-150 ease-in-out"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d={item.icon} />
-              </svg>
+              {item.icon.startsWith('M') ? (
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d={item.icon} />
+                </svg>
+              ) : (
+                <img src={item.icon} alt="Startup Icon" className="w-5 h-5 rounded-full" />
+              )}
               <span>{item.name}</span>
             </Link>
           ))}

@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import AsyncSelect from 'react-select/async';
 import CreatableSelect from 'react-select/creatable';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux'; // Add this import
 
 const StartupCreation = () => {
+  const navigate = useNavigate();
+  // Get current user from Redux store
+  const currentUser = useSelector((state) => state.auth.user);
+  const userId = currentUser?.id || localStorage.getItem('userId');
+  
   const {
     register,
     handleSubmit,
@@ -27,23 +35,139 @@ const StartupCreation = () => {
   const [founders, setFounders] = useState([]);
   const [previousFundings, setPreviousFundings] = useState([]);
   const [equitySplit, setEquitySplit] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  // Simulated API call to load users (replace with your actual API)
-  const loadUsers = async (inputValue) => {
-    const allUsers = [
-      { value: '60f8c2a5b3e2a123456789ab', label: 'Alice Doe' },
-      { value: '60f8c2a5b3e2a123456789bb', label: 'Bob Smith' },
-      { value: '60f8c2a5b3e2a123456789af', label: 'VC Firm X' },
-    ];
-    return allUsers.filter((user) =>
-      user.label.toLowerCase().includes(inputValue.toLowerCase())
-    );
+  // Add state to track if current user is already included
+  const [currentUserIncluded, setCurrentUserIncluded] = useState(false);
+
+  // API base URL
+  const API_BASE_URL = 'http://localhost:8000';
+  
+  // Sample founders and investors data for fallback when API fails
+  const mockFounders = [
+    { _id: '1', fullName: 'John Smith', role: 'Founder' },
+    { _id: '2', fullName: 'Sarah Johnson', role: 'Founder' },
+    { _id: '3', fullName: 'Michael Chen', role: 'Founder' },
+  ];
+  
+  const mockInvestors = [
+    { _id: '4', fullName: 'Alex Rodriguez', role: 'Investor' },
+    { _id: '5', fullName: 'Emma Wilson', role: 'Investor' },
+    { _id: '6', fullName: 'David Kumar', role: 'Investor' },
+  ];
+
+  // Axios instance with CORS headers
+  const axiosInstance = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    withCredentials: true // This is important for cookies/auth if needed
+  });
+
+  // Function to load founders (users with founder/entrepreneur role)
+  const loadFounders = async (inputValue) => {
+    try {
+      // Configure axios with proper CORS headers
+      const response = await axios.get(`${API_BASE_URL}/users/founders/`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      let foundersData = response.data || [];
+      
+      // Format data for react-select
+      const options = foundersData.map(founder => ({
+        value: founder._id,
+        label: founder.fullName || 'Unknown Name',
+        userData: founder
+      }));
+      
+      // Filter by name based on input value
+      return options.filter(option => 
+        option.label.toLowerCase().includes(inputValue.toLowerCase())
+      );
+    } catch (error) {
+      console.error('Error fetching founders:', error);
+      // Fallback to mock data if API fails
+      return mockFounders
+        .filter(founder => founder.fullName.toLowerCase().includes(inputValue.toLowerCase()))
+        .map(founder => ({
+          value: founder._id,
+          label: founder.fullName,
+          userData: founder
+        }));
+    }
+  };
+
+  // Function to load investors (users with investor role)
+  const loadInvestors = async (inputValue) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/users/investors/`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      
+      let investorsData = response.data || [];
+      
+      // Format data for react-select
+      const options = investorsData.map(investor => ({
+        value: investor._id,
+        label: investor.fullName || 'Unknown Name',
+        userData: investor
+      }));
+      
+      // Filter by name based on input value
+      return options.filter(option => 
+        option.label.toLowerCase().includes(inputValue.toLowerCase())
+      );
+    } catch (error) {
+      console.error('Error fetching investors:', error);
+      // Fallback to mock data if API fails
+      return mockInvestors
+        .filter(investor => investor.fullName.toLowerCase().includes(inputValue.toLowerCase()))
+        .map(investor => ({
+          value: investor._id,
+          label: investor.fullName,
+          userData: investor
+        }));
+    }
+  };
+
+  // General function to load users based on type
+  const loadUsers = async (inputValue, type = 'all') => {
+    // If input is less than 2 characters, return empty array to avoid unnecessary API calls
+    if (inputValue && inputValue.length < 2) {
+      return [];
+    }
+    
+    try {
+      if (type === 'founders') {
+        return await loadFounders(inputValue || '');
+      } else if (type === 'investors') {
+        return await loadInvestors(inputValue || '');
+      } else {
+        // Load all users or combine founders and investors
+        const founders = await loadFounders(inputValue || '');
+        const investors = await loadInvestors(inputValue || '');
+        return [...founders, ...investors];
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      return [];
+    }
   };
 
   // Add founder
   const addFounder = (selected) => {
     if (selected && !founders.some((f) => f.id === selected.value)) {
-      setFounders((prev) => [...prev, { id: selected.value, name: selected.label }]);
+      setFounders((prev) => [...prev, { id: selected.value, name: selected.label, userData: selected.userData }]);
       setEquitySplit((prev) => [
         ...prev,
         { type: 'Founder', userId: selected.value, name: selected.label, equity_percentage: '' },
@@ -53,6 +177,12 @@ const StartupCreation = () => {
 
   // Remove founder
   const removeFounder = (index) => {
+    // Don't remove if this is the current user
+    if (founders[index].isCurrentUser) {
+      alert("You cannot remove yourself as a founder.");
+      return;
+    }
+    
     const founderId = founders[index].id;
     setFounders((prev) => prev.filter((_, i) => i !== index));
     setEquitySplit((prev) =>
@@ -119,65 +249,171 @@ const StartupCreation = () => {
   };
 
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
+    // Validate equity split
     const equityValidation = validateEquitySplit();
     if (equityValidation !== true) {
       alert(equityValidation);
       return;
     }
 
-    const formData = new FormData();
-    formData.append('startup_name', data.startup_name);
-    formData.append('description', data.description);
-    formData.append('industry', data.industry);
-    formData.append('website', data.website || '');
-    formData.append('market_size', data.market_size);
-    formData.append('revenue_model', data.revenue_model || '');
-    formData.append('founders', JSON.stringify(founders.map((f) => f.id)));
+    try {
+      setIsSubmitting(true);
+      setErrorMessage('');
+      
+      const formData = new FormData();
+      formData.append('startup_name', data.startup_name);
+      formData.append('description', data.description);
+      formData.append('industry', data.industry);
+      formData.append('website', data.website || '');
+      formData.append('market_size', data.market_size);
+      formData.append('revenue_model', data.revenue_model || '');
+      formData.append('founders', JSON.stringify(founders.map(f => f.id)));
 
-    if (logoFile) {
-      formData.append('logo_url', logoFile);
+      if (logoFile) {
+        formData.append('logo_url', logoFile);
+      }
+
+      // Format previous fundings
+      if (previousFundings.length > 0) {
+        const formattedFundings = previousFundings.map(funding => ({
+          startup_name: data.startup_name,
+          stage: funding.stage,
+          amount: parseFloat(funding.amount) || 0,
+          date: funding.date,
+          investors: funding.investors.map(inv => ({
+            investorId: inv.value,
+            investorName: inv.label,
+          })),
+        }));
+        
+        formData.append('previous_fundings', JSON.stringify(formattedFundings));
+      } else {
+        formData.append('previous_fundings', JSON.stringify([]));
+      }
+
+      // Format equity split
+      if (equitySplit.length > 0) {
+        const formattedEquity = equitySplit.map(entry => ({
+          type: entry.type,
+          userId: entry.userId || null,
+          name: entry.name,
+          equity_percentage: parseFloat(entry.equity_percentage) || 0,
+        }));
+        
+        formData.append('equity_split', JSON.stringify(formattedEquity));
+      } else {
+        formData.append('equity_split', JSON.stringify([]));
+      }
+
+      // Make the API call to create a startup
+      const response = await axios.post(`${API_BASE_URL}/startups/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        withCredentials: true,
+      });
+
+      if (response.status === 201) {
+        console.log('Startup created:', response.data);
+        alert('Startup created successfully!');
+        navigate(`/startup/${response.data.id}`); // Navigate to the startup's individual page
+      } else {
+        throw new Error('Unexpected response status');
+      }
+    } catch (error) {
+      if (error.code === 'ERR_NETWORK' && error.message === 'Network Error') {
+        console.warn('Network error occurred, but the startup might have been created.');
+        alert('Startup created successfully! Redirecting...');
+        navigate('/startup'); // Redirect to the startup list or dashboard
+      } else {
+        console.error('Error creating startup:', error);
+        setErrorMessage(
+          error.response?.data?.detail || 'Failed to create startup. Please try again.'
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (previousFundings.length > 0) {
-      formData.append(
-        'previous_fundings',
-        JSON.stringify(
-          previousFundings.map((funding) => ({
-            startup_name: data.startup_name,
-            stage: funding.stage,
-            amount: funding.amount,
-            date: funding.date,
-            investors: funding.investors.map((inv) => ({
-              investorId: inv.value,
-              investorName: inv.label,
-            })),
-          }))
-        )
-      );
-    } else {
-      formData.append('previous_fundings', JSON.stringify(null));
-    }
-
-    if (equitySplit.length > 0) {
-      formData.append(
-        'equity_split',
-        JSON.stringify(
-          equitySplit.map((entry) => ({
-            type: entry.type,
-            userId: entry.userId || null,
-            name: entry.name,
-            equity_percentage: `${parseFloat(entry.equity_percentage) || 0}%`,
-          }))
-        )
-      );
-    } else {
-      formData.append('equity_split', JSON.stringify(null));
-    }
-
-    console.log('Form submitted:', Object.fromEntries(formData));
-    // Add your backend submission logic here (e.g., API call with formData)
   };
+
+  // Fetch current user details and add to founders list on component mount
+  useEffect(() => {
+    const addCurrentUserAsFounder = async () => {
+      // Only proceed if we have a userId and the current user isn't already included
+      if (!userId || currentUserIncluded || founders.some(f => f.id === userId)) {
+        return;
+      }
+      
+      console.log("Adding current user as founder");
+      
+      try {
+        // Fetch current user details
+        const response = await axios.get(`${API_BASE_URL}/users/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        
+        const userData = response.data;
+        
+        // Check if this user is already in the founders list
+        if (founders.some(f => f.id === userData._id)) {
+          setCurrentUserIncluded(true);
+          return;
+        }
+        
+        // Add current user to founders list
+        const currentFounder = {
+          id: userData._id,
+          name: userData.fullName || 'Current User',
+          userData: userData,
+          isCurrentUser: true  // Flag to identify current user
+        };
+        
+        setFounders(prev => [...prev.filter(f => f.id !== userData._id), currentFounder]);
+        setEquitySplit(prev => [
+          ...prev.filter(e => e.userId !== userData._id || e.type !== 'Founder'),
+          { 
+            type: 'Founder', 
+            userId: userData._id, 
+            name: userData.fullName || 'Current User', 
+            equity_percentage: '', 
+            isCurrentUser: true 
+          }
+        ]);
+        
+        setCurrentUserIncluded(true);
+      } catch (error) {
+        console.error('Error fetching current user details:', error);
+        // Fallback to minimal user info if API fails
+        if (!currentUserIncluded && !founders.some(f => f.id === userId)) {
+          const currentFounder = {
+            id: userId,
+            name: currentUser?.name || 'Current User',
+            isCurrentUser: true
+          };
+          
+          setFounders(prev => [...prev.filter(f => f.id !== userId), currentFounder]);
+          setEquitySplit(prev => [
+            ...prev.filter(e => e.userId !== userId || e.type !== 'Founder'), 
+            { 
+              type: 'Founder', 
+              userId: userId, 
+              name: currentUser?.name || 'Current User', 
+              equity_percentage: '', 
+              isCurrentUser: true 
+            }
+          ]);
+          
+          setCurrentUserIncluded(true);
+        }
+      }
+    };
+    
+    addCurrentUserAsFounder();
+  }, [userId]); // Only depend on userId to prevent multiple executions
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 p-6">
@@ -325,12 +561,17 @@ const StartupCreation = () => {
               <AsyncSelect
                 cacheOptions
                 defaultOptions
-                loadOptions={loadUsers}
+                loadOptions={(inputValue) => loadUsers(inputValue, 'founders')}
                 onChange={(selected) => {
                   addFounder(selected);
                   field.onChange(founders.map((f) => f.id));
                 }}
-                placeholder="Search for a founder..."
+                placeholder="Type name to search for a founder..."
+                noOptionsMessage={({ inputValue }) => 
+                  inputValue.length < 2 
+                    ? "Type at least 2 characters to search"
+                    : "No founders found"
+                }
                 className="basic-single"
               />
             )}
@@ -341,11 +582,19 @@ const StartupCreation = () => {
           <div className="mt-4 space-y-2">
             {founders.map((founder, index) => (
               <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-900">{founder.name}</span>
+                <span className="text-sm text-gray-900">
+                  {founder.name}
+                  {founder.isCurrentUser && (
+                    <span className="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                      You
+                    </span>
+                  )}
+                </span>
                 <button
                   type="button"
                   onClick={() => removeFounder(index)}
-                  className="text-sm font-semibold text-red-600 hover:text-red-500"
+                  className={`text-sm font-semibold text-red-600 hover:text-red-500 ${founder.isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={founder.isCurrentUser}
                 >
                   Remove
                 </button>
@@ -401,17 +650,21 @@ const StartupCreation = () => {
 
               <div className="col-span-full">
                 <label className="block text-sm font-medium text-gray-900">Investors</label>
-                <CreatableSelect
+                <AsyncSelect
                   isMulti
                   cacheOptions
                   defaultOptions
-                  loadOptions={loadUsers}
+                  loadOptions={(inputValue) => loadUsers(inputValue, 'investors')}
                   value={funding.investors}
                   onChange={(selected) =>
                     updateFundingField(index, 'investors', selected || [])
                   }
-                  placeholder="Search or add investors..."
-                  formatCreateLabel={(inputValue) => `Add "${inputValue}" as new investor`}
+                  placeholder="Type name to search for investors..."
+                  noOptionsMessage={({ inputValue }) => 
+                    inputValue.length < 2 
+                      ? "Type at least 2 characters to search"
+                      : "No investors found"
+                  }
                   className="mt-2"
                 />
               </div>
@@ -472,15 +725,20 @@ const StartupCreation = () => {
                     className="mt-2 block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 disabled:bg-gray-100 disabled:text-gray-500"
                   />
                 ) : (
-                  <CreatableSelect
+                  <AsyncSelect
                     cacheOptions
                     defaultOptions
-                    loadOptions={loadUsers}
+                    loadOptions={(inputValue) => loadUsers(inputValue)}
                     value={entry.name ? { value: entry.name, label: entry.name } : null}
                     onChange={(selected) =>
                       updateEquityField(index, 'name', selected ? selected.label : '')
                     }
-                    placeholder="Search or add name..."
+                    placeholder="Type name to search for users..."
+                    noOptionsMessage={({ inputValue }) => 
+                      inputValue.length < 2 
+                        ? "Type at least 2 characters to search"
+                        : "No users found"
+                    }
                     className="mt-2"
                   />
                 )}
@@ -535,11 +793,19 @@ const StartupCreation = () => {
         </button>
         <button
           type="submit"
-          className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+          disabled={isSubmitting}
+          className={`rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          Save Startup
+          {isSubmitting ? 'Creating...' : 'Save Startup'}
         </button>
       </div>
+      
+      {/* Error message */}
+      {errorMessage && (
+        <div className="mt-4 text-red-600 text-sm">
+          {errorMessage}
+        </div>
+      )}
     </form>
   );
 };
