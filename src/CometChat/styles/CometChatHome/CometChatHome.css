@@ -1,0 +1,80 @@
+.cometchat-home {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.cometchat-root {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.cometchat-home__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.cometchat-home__loading-indicator {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--cometchat-background-color-03, #f5f5f5);
+  border-top: 4px solid var(--cometchat-primary-color, #6852D6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.cometchat-home__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--cometchat-background-color-01, #fff);
+  color: var(--cometchat-error-color, #f44649);
+  padding: 24px;
+  text-align: center;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Make sure the chat UI takes up full space */
+.cometchat-home .cometchat-uikit {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure light theme colors */
+[data-theme="light"] {
+  --cometchat-background-color-01: #ffffff;
+  --cometchat-background-color-02: #fafafa;
+  --cometchat-background-color-03: #f5f5f5;
+  --cometchat-background-color-04: #e8e8e8;
+  --cometchat-text-color-primary: #141414;
+  --cometchat-text-color-secondary: #727272;
+}
+
+/* Ensure dark theme colors */
+[data-theme="dark"] {
+  --cometchat-background-color-01: #141414;
+  --cometchat-background-color-02: #282828; 
+  --cometchat-background-color-03: #383838;
+  --cometchat-background-color-04: #4d4d4d;
+  --cometchat-text-color-primary: #ffffff;
+  --cometchat-text-color-secondary: #d3d3d3;
+}
