@@ -14,7 +14,7 @@
     "@cometchat-pro/chat": "^3.0.13",
     "@cometchat/calls-sdk-javascript": "^4.0.12",
     "@cometchat/chat-sdk-javascript": "^4.0.11",
-    "@cometchat/chat-uikit-react": "^6.0.4",
+    "@cometchat/chat-uikit-react": "^5.0.7",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^2.2.0",
@@ -31,9 +31,10 @@
     "@reduxjs/toolkit": "^2.6.1",
     "@tailwindcss/vite": "^4.0.9",
     "axios": "^1.8.1",
-    "chart.js": "^4.4.8",
+    "chart.js": "^4.4.9",
     "dayjs": "^1.11.13",
     "framer-motion": "^12.4.7",
+    "lucide-react": "^0.488.0",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
     "react-devtools": "^6.1.1",
@@ -43,6 +44,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.2.0",
     "react-select": "^5.10.1",
+    "rxjs": "^7.8.1",
     "yup": "^1.6.1"
   },
   "devDependencies": {

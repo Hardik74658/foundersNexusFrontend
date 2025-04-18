@@ -20,6 +20,9 @@ import ResetPassword from './components/ResetPassword.jsx';
 import Users from './components/Pages/Users.jsx';
 import StartupDetails from './components/Pages/StartupDetails.jsx';
 import EditStartup from './components/Pages/EditStartup';
+import ChatPage from './components/ChatPage';
+import AdminDashboard from './components/Pages/AdminDashboard.jsx';
+import Pitch from './components/Pages/Pitch.jsx';
 
 function App() {
   const dispatch = useDispatch();
@@ -208,7 +211,31 @@ function App() {
           </AuthLayout>
         }
       />
-      
+      {/* Add Chat route */}
+      <Route
+        path="/chat"
+        element={
+          <AuthLayout authentication={true}>
+            <ChatPage />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <AuthLayout authentication={true}>
+            <AdminDashboard />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/pitch"
+        element={
+          <AuthLayout authentication={true}>
+            <Pitch />
+          </AuthLayout>
+        }
+      />
     </Routes>
   );
 }

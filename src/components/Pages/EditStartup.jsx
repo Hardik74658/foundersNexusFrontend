@@ -585,7 +585,7 @@ const EditStartup = () => {
                   type="text"
                   value={formData.industry}
                   onChange={(e) => handleInputChange(e, 'industry')}
-                  className="px-4 py-1 bg-gray-200 rounded-full text-gray-600 text-sm text-center bg-transparent border border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:outline-none"
+                  className="px-4 py-1  rounded-full text-gray-600 text-sm text-center bg-transparent border border-gray-200 hover:border-gray-300 focus:border-indigo-500 focus:outline-none"
                   placeholder="Industry"
                   required
                 />
