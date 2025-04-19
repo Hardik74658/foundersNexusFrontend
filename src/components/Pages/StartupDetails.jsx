@@ -7,27 +7,84 @@ import { useSelector } from 'react-redux';
 // Fix the image import
 import teamMeeting from '../../assets/team-meeting.png';
 import axios from 'axios';
+import {
+  DocumentTextIcon,
+  ArrowDownTrayIcon,
+  EyeIcon,
+  ClockIcon,
+  CurrencyDollarIcon,
+  ChartPieIcon,
+  PresentationChartBarIcon,
+} from '@heroicons/react/24/outline';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+const API_URL = 'http://localhost:8000';
 
 const StartupDetails = () => {
   const { id } = useParams(); // Get startup ID from URL
   const navigate = useNavigate(); // Add navigation hook
   const [startupData, setStartupData] = useState(null);
+  const [activePitchDeck, setActivePitchDeck] = useState(null);
+  const [isPitchLoading, setIsPitchLoading] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null); // Track hovered person
   const currentUser = useSelector((state) => state.auth.user); // Get current user from Redux store
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/startups/${id}`)
+      .get(`${API_URL}/startups/${id}`)
       .then((response) => {
         setStartupData(response.data);
       })
       .catch((error) => {
         console.error('Error fetching startup data:', error);
       });
+      
+    // Fetch the active pitch deck for this startup
+    fetchActivePitchDeck(id);
   }, [id]);
+  
+  const fetchActivePitchDeck = async (startupId) => {
+    try {
+      setIsPitchLoading(true);
+      const response = await axios.get(`${API_URL}/pitchdecks/active/${startupId}`);
+      
+      if (response.data) {
+        const deck = response.data;
+        setActivePitchDeck({
+          id: deck._id,
+          title: deck.title,
+          description: deck.description || 'No description provided',
+          raiseUntil: deck.raise_until
+            ? new Date(deck.raise_until).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'N/A',
+          target: deck.target_amount || 'TBD',
+          round: deck.round || 'Pre-Seed',
+          previewImage: deck.thumbnail_url || null,
+          fileUrl: deck.file_url || null,
+          dateUploaded: deck.created_at
+            ? new Date(deck.created_at).toLocaleDateString('en-US', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+              })
+            : 'N/A',
+          slides: deck.slides_count || 0
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching active pitch deck:', error);
+      // No active pitch deck - this is an expected case, not an error
+      setActivePitchDeck(null);
+    } finally {
+      setIsPitchLoading(false);
+    }
+  };
 
   if (!startupData) {
     return <div>Loading...</div>;
@@ -194,6 +251,120 @@ const StartupDetails = () => {
                 <p className="text-gray-500 text-sm mb-2">Revenue Model</p>
                 <p className="text-2xl font-bold">{startupData.revenue_model || "Something"}</p>
               </div>
+            </div>
+
+            {/* Active Pitch Deck Section */}
+            <div className="mb-8">
+              <div className="flex items-center mb-4">
+                <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white mr-2">
+                  <PresentationChartBarIcon className="h-5 w-5" />
+                </div>
+                <h2 className="text-xl font-bold">Active Pitch Deck</h2>
+              </div>
+              
+              {isPitchLoading ? (
+                <div className="flex justify-center items-center h-40">
+                  <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+                </div>
+              ) : activePitchDeck ? (
+                <div className="relative rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg bg-white border border-gray-100">
+                  <div className="h-48 bg-gradient-to-br from-gray-900 to-gray-700 relative overflow-hidden">
+                    {activePitchDeck.previewImage ? (
+                      <img 
+                        src={activePitchDeck.previewImage} 
+                        alt={`${activePitchDeck.title} preview`} 
+                        className="w-full h-full object-cover opacity-90" 
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <PresentationChartBarIcon className="h-20 w-20 text-gray-500" />
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+
+                    <div className="absolute top-3 right-3 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-xs flex items-center">
+                      <DocumentTextIcon className="h-3 w-3 mr-1" />
+                      {activePitchDeck.slides} slides
+                    </div>
+
+                    <div className="absolute bottom-3 right-3 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                      Uploaded: {activePitchDeck.dateUploaded}
+                    </div>
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{activePitchDeck.title}</h3>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{activePitchDeck.description}</p>
+
+                    <div className="grid grid-cols-3 gap-3 mb-5">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <ClockIcon className="h-3 w-3 mr-1" />
+                          Raise Until
+                        </span>
+                        <span className="text-sm font-medium">{activePitchDeck.raiseUntil}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <CurrencyDollarIcon className="h-3 w-3 mr-1" />
+                          Target
+                        </span>
+                        <span className="text-sm font-medium">{activePitchDeck.target}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <ChartPieIcon className="h-3 w-3 mr-1" />
+                          Round
+                        </span>
+                        <span className="text-sm font-medium">{activePitchDeck.round}</span>
+                      </div>
+                    </div>
+
+                    {activePitchDeck.fileUrl ? (
+                      <div className="flex gap-2">
+                        <a
+                          href={activePitchDeck.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700 transition-colors"
+                        >
+                          <EyeIcon className="h-4 w-4" />
+                          View
+                        </a>
+                        <a
+                          href={activePitchDeck.fileUrl}
+                          download
+                          className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                        >
+                          <ArrowDownTrayIcon className="h-4 w-4" />
+                          Download
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="text-center py-2 text-sm text-gray-500">
+                        No downloadable file available
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-gray-50 rounded-xl p-8 text-center border border-gray-200">
+                  <PresentationChartBarIcon className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                  <h3 className="text-gray-600 font-medium mb-1">No Active Pitch Deck</h3>
+                  <p className="text-gray-500 text-sm">
+                    This startup does not have an active pitch deck yet.
+                  </p>
+                  {isUserFounder() && (
+                    <button
+                      onClick={() => navigate('/pitch')}
+                      className="mt-3 text-indigo-600 text-sm font-medium hover:text-indigo-800"
+                    >
+                      + Add a Pitch Deck
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Equity Split */}

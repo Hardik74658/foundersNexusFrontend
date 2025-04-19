@@ -62,6 +62,7 @@ function App() {
             id: response.data._id,
             name: response.data.fullName,
             email: response.data.email,
+            currentStartup: response.data.currentStartup,
           };
           dispatch(loggedIn(serializableUserData));
         } else {

@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  CloudArrowUpIcon, 
-  DocumentTextIcon, 
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { UploadLoader } from '../layout/Loader';
+import {
+  CloudArrowUpIcon,
+  DocumentTextIcon,
   CheckCircleIcon,
   ArrowDownTrayIcon,
   EyeIcon,
@@ -14,77 +18,118 @@ import {
   ArrowsRightLeftIcon,
   TrashIcon,
   PresentationChartBarIcon,
-  LinkIcon
+  LinkIcon,
+  ExclamationCircleIcon,
+  DocumentPlusIcon,
 } from '@heroicons/react/24/outline';
 
+const API_URL = 'http://localhost:8000';
+
 export default function Pitch() {
+  const user = useSelector((state) => state.auth.user);
+  const isLoggedIn = !!user;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    } else if (!user.currentStartup) {
+      navigate('/startups');
+    }
+  }, [isLoggedIn, user, navigate]);
+
+  if (!isLoggedIn || !user.currentStartup) {
+    return null;
+  }
+
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [round, setRound] = useState('Pre-Seed');
+  const [target, setTarget] = useState('');
+  const [raiseUntil, setRaiseUntil] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
-  const [activeId, setActiveId] = useState('tech-innovators'); // Default active pitch
+  const [activeId, setActiveId] = useState('');
   const fileInputRef = useRef(null);
   const [isHovering, setIsHovering] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [pitchDecks, setPitchDecks] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  // Sample pitch decks data - Updated with the Canva link
-  const [pitchDecks, setPitchDecks] = useState([
-    {
-      id: 'tech-innovators',
-      title: 'Tech Innovators',
-      description: 'A platform for next-gen AI solutions',
-      raiseUntil: '31 Jul 2024',
-      target: '$2,000,000',
-      round: 'Seed Round',
-      previewImage: 'https://i.imgur.com/JyXaErp.png', // Example image
-      active: true,
-      dateUploaded: '15 Mar 2024',
-      slides: 16,
-      externalLink: null
-    },
-    {
-      id: 'green-energy',
-      title: 'Green Energy Solutions',
-      description: 'Sustainable energy for modern businesses',
-      raiseUntil: '15 Sep 2024',
-      target: '$1,500,000',
-      round: 'Pre-Seed',
-      previewImage: 'https://i.imgur.com/P8jEAZl.png', // Example image
-      active: false,
-      dateUploaded: '10 Apr 2024',
-      slides: 22,
-      externalLink: null
-    },
-    {
-      id: 'sample-pitch',
-      title: 'Sample Pitch Deck',
-      description: 'Example of a well-structured pitch deck',
-      raiseUntil: '31 Dec 2024',
-      target: 'Example',
-      round: 'Demo',
-      previewImage: 'https://marketplace.canva.com/EAFLBMxBdK4/1/0/1600w/canva-blue-gradient-modern-business-pitch-deck-presentation-ou9ARW-LgFQ.jpg',
-      active: false,
-      dateUploaded: '18 Apr 2024',
-      slides: 15,
-      externalLink: 'https://www.canva.com/design/DAGXR4odW_Q/Oj6FAiDFBy93ZdLHY28LfA/view?utm_content=DAGXR4odW_Q&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=ha3d0f71668'
+  const roundOptions = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth'];
+
+  useEffect(() => {
+    if (isLoggedIn && user.currentStartup) {
+      fetchPitchDecks();
     }
-  ]);
+  }, [isLoggedIn, user.currentStartup]);
 
-  // Handle file input change
+  const fetchPitchDecks = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await axios.get(`${API_URL}/pitchdeck/startup/${user.currentStartup}`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      });
+
+      const formattedDecks = response.data.map((deck) => ({
+        id: deck._id,
+        title: deck.title,
+        description: deck.description || 'No description provided',
+        raiseUntil: deck.raise_until
+          ? new Date(deck.raise_until).toLocaleDateString('en-US', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : 'N/A',
+        target: deck.target_amount || 'TBD',
+        round: deck.round || 'Pre-Seed',
+        previewImage: deck.thumbnail_url || null,
+        fileUrl: deck.file_url || null,
+        active: deck.active,
+        dateUploaded: deck.created_at
+          ? new Date(deck.created_at).toLocaleDateString('en-US', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })
+          : 'N/A',
+        slides: deck.slides_count || 0,
+        externalLink: deck.external_link || null,
+      }));
+
+      setPitchDecks(formattedDecks);
+
+      const activeDeck = formattedDecks.find((deck) => deck.active);
+      if (activeDeck) {
+        setActiveId(activeDeck.id);
+      }
+    } catch (err) {
+      setError('Failed to fetch pitch decks. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
       
-      // Create a preview URL for PDF or image files
-      if (selectedFile.type === 'application/pdf' || selectedFile.type.startsWith('image/')) {
+      // Create object URL for preview
+      if (selectedFile.type.startsWith('image/')) {
         const objectUrl = URL.createObjectURL(selectedFile);
         setPreviewUrl(objectUrl);
       }
     }
   };
 
-  // Handle drag events
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -101,67 +146,128 @@ export default function Pitch() {
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-    
+
     const droppedFile = e.dataTransfer.files[0];
-    if (droppedFile && (droppedFile.type === 'application/pdf' || 
-                         droppedFile.type === 'application/vnd.ms-powerpoint' ||
-                         droppedFile.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation')) {
+    if (
+      droppedFile &&
+      (droppedFile.type === 'application/pdf' ||
+        droppedFile.type === 'application/vnd.ms-powerpoint' ||
+        droppedFile.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    ) {
       setFile(droppedFile);
       
-      if (droppedFile.type === 'application/pdf') {
+      if (droppedFile.type.startsWith('image/')) {
         const objectUrl = URL.createObjectURL(droppedFile);
         setPreviewUrl(objectUrl);
       }
     }
   };
 
-  // Handle upload button click
-  const handleUpload = () => {
-    if (file && title) {
-      // Create a new pitch deck object
-      const newPitchDeck = {
-        id: `pitch-${Date.now()}`,
-        title: title,
-        description: description || 'No description provided',
-        raiseUntil: '31 Dec 2024',
-        target: 'TBD',
-        round: 'Pre-Seed',
-        previewImage: previewUrl || 'https://i.imgur.com/default.png',
-        active: false,
-        dateUploaded: new Date().toLocaleDateString('en-US', {
-          day: 'numeric',
-          month: 'short',
-          year: 'numeric'
-        }),
-        slides: Math.floor(Math.random() * 20) + 10 // Random slide count for demo
-      };
-      
-      // Add the new pitch deck to the list
-      setPitchDecks([newPitchDeck, ...pitchDecks]);
-      
-      // Reset form values
+  const handleUpload = async () => {
+    if (!file || !title) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', title);
+      formData.append('description', description || 'No description provided');
+      formData.append('round', round);
+      formData.append('target_amount', target || 'TBD');
+
+      let raiseUntilDate = raiseUntil;
+      if (!raiseUntilDate) {
+        const defaultDate = new Date();
+        defaultDate.setDate(defaultDate.getDate() + 90);
+        raiseUntilDate = defaultDate.toISOString().split('T')[0];
+      }
+      formData.append('raise_until', raiseUntilDate);
+      formData.append('startup_id', user.currentStartup);
+
+      // Note: The backend will handle generating thumbnails from the PDF
+
+      const response = await axios.post(`${API_URL}/pitchdeck/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${user.token}`
+        }
+      });
+
+      setSuccessMessage('Pitch deck uploaded successfully!');
+      setTimeout(() => setSuccessMessage(null), 5000);
+
       setFile(null);
       setTitle('');
       setDescription('');
+      setRound('Pre-Seed');
+      setTarget('');
+      setRaiseUntil('');
       setPreviewUrl('');
-      
-      // Show success notification (you can implement this)
-      console.log('Uploading:', { title, description, file });
+
+      fetchPitchDecks();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to upload pitch deck. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Toggle active state of a pitch deck
-  const toggleActive = (id) => {
-    setPitchDecks(
-      pitchDecks.map(deck => ({
-        ...deck,
-        active: deck.id === id
-      }))
-    );
-    setActiveId(id);
+  const toggleActive = async (id) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await axios.put(`${API_URL}/pitchdecks/${id}/activate`, {
+        startup_id: user.currentStartup,
+      }, {
+        headers: {
+          Authorization: `Bearer ${user.token}`
+        }
+      });
+
+      setPitchDecks(
+        pitchDecks.map((deck) => ({
+          ...deck,
+          active: deck._id === id || deck.id === id,
+        }))
+      );
+      setActiveId(id);
+
+      setSuccessMessage('Pitch deck activated successfully!');
+      setTimeout(() => setSuccessMessage(null), 5000);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to activate pitch deck. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Clean up any created object URLs when component unmounts
+  const deletePitchDeck = async (id) => {
+    if (window.confirm('Are you sure you want to delete this pitch deck? This action cannot be undone.')) {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        await axios.delete(`${API_URL}/pitchdecks/${id}`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
+
+        setPitchDecks(pitchDecks.filter((deck) => deck._id !== id && deck.id !== id));
+
+        setSuccessMessage('Pitch deck deleted successfully!');
+        setTimeout(() => setSuccessMessage(null), 5000);
+      } catch (err) {
+        setError(err.response?.data?.detail || 'Failed to delete pitch deck. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -172,7 +278,6 @@ export default function Pitch() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 font-sans">
-      {/* Header */}
       <header className="flex items-center justify-between py-4 px-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
@@ -182,46 +287,9 @@ export default function Pitch() {
           </div>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 text-transparent bg-clip-text">Founders Nexus</h1>
         </div>
-        
-        <nav className="hidden md:flex space-x-8 text-sm font-medium">
-          <a href="#" className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-            </svg>
-            Overview
-          </a>
-          <a href="#" className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-            User Management
-          </a>
-          <a href="#" className="flex items-center gap-1.5 text-gray-700 hover:text-indigo-600 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            Startups
-          </a>
-          <a href="#" className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-xl shadow-md hover:shadow-lg transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Pitch Decks
-          </a>
-        </nav>
-
-        <div className="md:hidden">
-          <button className="text-gray-700 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
       </header>
 
-      {/* Main Content */}
       <main className="mt-8 max-w-7xl mx-auto">
-        {/* Title and intro */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -234,16 +302,21 @@ export default function Pitch() {
           </p>
         </motion.div>
 
-        {/* Upload Section */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto max-w-4xl mb-16"
         >
-          <div className="bg-white rounded-3xl p-8 shadow-xl">
+          <div className="bg-white rounded-3xl p-8 shadow-xl relative">
+            {/* Upload Loader - Only appears over the upload area */}
+            {isLoading && (
+              <div className="absolute inset-0 z-20 bg-black/30 backdrop-blur-sm rounded-3xl flex items-center justify-center">
+                <UploadLoader />
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Upload Area */}
               <div>
                 <div
                   className={`
@@ -259,14 +332,14 @@ export default function Pitch() {
                   onMouseEnter={() => setIsHovering(true)}
                   onMouseLeave={() => setIsHovering(false)}
                 >
-                  <motion.div 
-                    animate={{ 
+                  <motion.div
+                    animate={{
                       y: [0, -5, 0],
-                      scale: isHovering ? 1.05 : 1
+                      scale: isHovering ? 1.05 : 1,
                     }}
-                    transition={{ 
-                      y: { duration: 2, repeat: Infinity, ease: "easeInOut" },
-                      scale: { duration: 0.3 }
+                    transition={{
+                      y: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+                      scale: { duration: 0.3 },
                     }}
                     className="mb-4"
                   >
@@ -279,13 +352,13 @@ export default function Pitch() {
 
                   <h3 className="text-xl font-bold text-gray-700 mb-2">Drag and drop your pitch deck here</h3>
                   <p className="text-gray-500 text-center mb-4">or click to browse your files</p>
-                  
+
                   <div className="text-xs text-gray-400 flex flex-wrap justify-center gap-2">
                     <span className="px-2 py-1 bg-gray-100 rounded-full">PDF</span>
                     <span className="px-2 py-1 bg-gray-100 rounded-full">PowerPoint</span>
                     <span className="px-2 py-1 bg-gray-100 rounded-full">Max 50MB</span>
                   </div>
-                  
+
                   <input
                     ref={fileInputRef}
                     id="upload"
@@ -294,7 +367,7 @@ export default function Pitch() {
                     className="hidden"
                     onChange={handleFileChange}
                   />
-                  
+
                   {file && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90 rounded-2xl p-4">
                       <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-4">
@@ -304,7 +377,7 @@ export default function Pitch() {
                       </div>
                       <h4 className="text-lg font-medium text-gray-800 mb-1">File selected!</h4>
                       <p className="text-sm text-gray-500 mb-4 text-center">{file.name}</p>
-                      <button 
+                      <button
                         className="text-xs text-red-500 hover:underline"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -320,7 +393,9 @@ export default function Pitch() {
 
                 <div className="space-y-4 mt-6">
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                      Title
+                    </label>
                     <input
                       id="title"
                       type="text"
@@ -330,7 +405,52 @@ export default function Pitch() {
                       className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all"
                     />
                   </div>
-                  
+
+                  <div>
+                    <label htmlFor="round" className="block text-sm font-medium text-gray-700 mb-1">
+                      Investment Round
+                    </label>
+                    <select
+                      id="round"
+                      value={round}
+                      onChange={(e) => setRound(e.target.value)}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all"
+                    >
+                      {roundOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="target" className="block text-sm font-medium text-gray-700 mb-1">
+                      Target Amount <span className="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="target"
+                      type="text"
+                      placeholder="e.g. $2,000,000"
+                      value={target}
+                      onChange={(e) => setTarget(e.target.value)}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="raiseUntil" className="block text-sm font-medium text-gray-700 mb-1">
+                      Raise Until <span className="text-gray-400">(optional)</span>
+                    </label>
+                    <input
+                      id="raiseUntil"
+                      type="date"
+                      value={raiseUntil}
+                      onChange={(e) => setRaiseUntil(e.target.value)}
+                      className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all"
+                    />
+                  </div>
+
                   <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                       Description <span className="text-gray-400">(optional)</span>
@@ -346,39 +466,48 @@ export default function Pitch() {
                   </div>
                 </div>
               </div>
-              
-              {/* Preview Area */}
+
               <div className="flex flex-col items-center justify-center">
                 {previewUrl ? (
                   <>
                     <div className="w-full h-64 rounded-2xl border-2 border-gray-200 overflow-hidden mb-4">
-                      {previewUrl.includes('pdf') ? (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                          <div className="text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                            <span className="text-gray-600 font-medium">PDF Preview</span>
-                            <p className="text-xs text-gray-500 mt-1">Preview not available. File selected.</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <img 
-                          src={previewUrl} 
-                          alt="Upload preview" 
-                          className="w-full h-full object-contain" 
-                        />
-                      )}
+                      <img src={previewUrl} alt="Upload preview" className="w-full h-full object-contain" />
                     </div>
-                    <p className="text-sm text-gray-500 mb-4">First slide will be used as preview</p>
+                    <p className="text-sm text-gray-500 mb-4">Preview image will be used as thumbnail</p>
                   </>
                 ) : (
                   <div className="w-full h-64 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
                     <div className="text-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-gray-500">Preview will appear here</span>
+                      {file ? (
+                        <>
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="mb-4">
+                              {file.type === 'application/pdf' ? (
+                                <DocumentTextIcon className="h-16 w-16 text-indigo-500" />
+                              ) : file.type.includes('powerpoint') ? (
+                                <PresentationChartBarIcon className="h-16 w-16 text-orange-500" />
+                              ) : (
+                                <DocumentTextIcon className="h-16 w-16 text-gray-400" />
+                              )}
+                            </div>
+                            <span className="text-gray-600 font-medium block mb-2">
+                              {file.type === 'application/pdf'
+                                ? 'PDF document'
+                                : file.type.includes('powerpoint')
+                                ? 'PowerPoint presentation'
+                                : 'Document'}
+                            </span>
+                            <span className="text-sm text-gray-500">First page will be used as thumbnail</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-gray-500">Preview will appear here</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
@@ -390,10 +519,9 @@ export default function Pitch() {
                     w-full rounded-xl px-6 py-4 text-white shadow-lg
                     flex items-center justify-center gap-2
                     transform transition-all duration-300
-                    ${file && title 
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:-translate-y-1 hover:shadow-xl' 
-                      : 'bg-gray-300 cursor-not-allowed'
-                    }
+                    ${file && title
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 hover:-translate-y-1 hover:shadow-xl'
+                      : 'bg-gray-300 cursor-not-allowed'}
                   `}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -406,178 +534,172 @@ export default function Pitch() {
           </div>
         </motion.div>
 
-        {/* Pitch Decks Gallery */}
         <section className="mb-16">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-2xl font-bold text-gray-800">Your Pitch Decks</h3>
-            
-            <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full"> {/* Improved contrast */}
-                <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div> {/* Improved contrast */}
-                <span>Active deck is public</span>
+
+            {pitchDecks.length > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-100 text-green-800 rounded-full">
+                  <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+                  <span>Active deck is public</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Pitch Decks Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {pitchDecks.map((deck) => (
-              <motion.div 
-                key={deck.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className={`
-                  relative rounded-3xl overflow-hidden shadow-lg 
-                  transition-all duration-300 hover:shadow-xl
-                  ${deck.active ? 'ring-4 ring-green-400 ring-opacity-50' : ''}
-                `}
-              >
-                {/* Preview Image */}
-                <div className="h-56 bg-gradient-to-br from-gray-900 to-gray-700 relative overflow-hidden">
-                  {deck.previewImage ? (
-                    <img 
-                      src={deck.previewImage} 
-                      alt={`${deck.title} preview`}
-                      className="w-full h-full object-cover opacity-90"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <PresentationChartBarIcon className="h-20 w-20 text-gray-500" />
-                    </div>
-                  )}
-
-                  {/* Overlay gradient - Made darker for better text contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
-
-                  {/* Slides count badge */}
-                  <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-xs flex items-center">
-                    <DocumentTextIcon className="h-3 w-3 mr-1" />
-                    {deck.slides} slides
-                  </div>
-
-                  {/* Active indicator */}
-                  {deck.active && (
-                    <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs flex items-center animate-pulse"> {/* Improved contrast */}
-                      <CheckCircleIcon className="h-3 w-3 mr-1" />
-                      Active
-                    </div>
-                  )}
-
-                  {/* External link indicator */}
-                  {deck.externalLink && (
-                    <div className="absolute bottom-4 left-4 bg-purple-600 text-white px-3 py-1 rounded-full text-xs flex items-center">
-                      <LinkIcon className="h-3 w-3 mr-1" />
-                      External Sample
-                    </div>
-                  )}
-
-                  {/* Date */}
-                  <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                    Uploaded: {deck.dateUploaded}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="bg-white p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h4 className="text-xl font-bold text-gray-900 mb-1">{deck.title}</h4>
-                      <p className="text-sm text-gray-600">{deck.description}</p>
-                    </div>
-                  </div>
-
-                  {/* Details - improved color contrast */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="flex flex-col">
-                      <span className="text-xs text-gray-600 mb-1 flex items-center font-medium"> {/* Improved contrast */}
-                        <ClockIcon className="h-3 w-3 mr-1" />
-                        Raise Until
-                      </span>
-                      <span className="text-sm font-medium">{deck.raiseUntil}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-gray-600 mb-1 flex items-center font-medium"> {/* Improved contrast */}
-                        <CurrencyDollarIcon className="h-3 w-3 mr-1" />
-                        Target
-                      </span>
-                      <span className="text-sm font-medium">{deck.target}</span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs text-gray-600 mb-1 flex items-center font-medium"> {/* Improved contrast */}
-                        <ChartPieIcon className="h-3 w-3 mr-1" />
-                        Round
-                      </span>
-                      <span className="text-sm font-medium">{deck.round}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-wrap gap-2">
-                    {deck.externalLink ? (
-                      <a 
-                        href={deck.externalLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors"
-                      >
-                        <EyeIcon className="h-4 w-4" />
-                        View Sample
-                      </a>
+          {pitchDecks.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {pitchDecks.map((deck) => (
+                <motion.div
+                  key={deck._id || deck.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className={`
+                    relative rounded-3xl overflow-hidden shadow-lg 
+                    transition-all duration-300 hover:shadow-xl
+                    ${deck.active ? 'ring-4 ring-green-400 ring-opacity-50' : ''}
+                  `}
+                >
+                  <div className="h-56 bg-gradient-to-br from-gray-900 to-gray-700 relative overflow-hidden">
+                    {deck.previewImage ? (
+                      <img src={deck.previewImage} alt={`${deck.title} preview`} className="w-full h-full object-cover opacity-90" />
                     ) : (
-                      <button className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors">
-                        <EyeIcon className="h-4 w-4" />
-                        View
-                      </button>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <PresentationChartBarIcon className="h-20 w-20 text-gray-500" />
+                      </div>
                     )}
-                    <button className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">
-                      <ArrowDownTrayIcon className="h-4 w-4" />
-                      Download
-                    </button>
-                    {!deck.externalLink && (
-                      <button 
-                        onClick={() => toggleActive(deck.id)}
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70"></div>
+
+                    <div className="absolute top-4 right-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-xs flex items-center">
+                      <DocumentTextIcon className="h-3 w-3 mr-1" />
+                      {deck.slides} slides
+                    </div>
+
+                    {deck.active && (
+                      <div className="absolute top-4 left-4 bg-green-600 text-white px-3 py-1 rounded-full text-xs flex items-center animate-pulse">
+                        <CheckCircleIcon className="h-3 w-3 mr-1" />
+                        Active
+                      </div>
+                    )}
+
+                    <div className="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                      Uploaded: {deck.dateUploaded}
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h4 className="text-xl font-bold text-gray-900 mb-1">{deck.title}</h4>
+                        <p className="text-sm text-gray-600">{deck.description}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <ClockIcon className="h-3 w-3 mr-1" />
+                          Raise Until
+                        </span>
+                        <span className="text-sm font-medium">{deck.raiseUntil}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <CurrencyDollarIcon className="h-3 w-3 mr-1" />
+                          Target
+                        </span>
+                        <span className="text-sm font-medium">{deck.target}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-600 mb-1 flex items-center font-medium">
+                          <ChartPieIcon className="h-3 w-3 mr-1" />
+                          Round
+                        </span>
+                        <span className="text-sm font-medium">{deck.round}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {deck.fileUrl ? (
+                        <>
+                          <a
+                            href={deck.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700 transition-colors"
+                          >
+                            <EyeIcon className="h-4 w-4" />
+                            View
+                          </a>
+                          <a
+                            href={deck.fileUrl}
+                            download
+                            className="flex-1 flex items-center justify-center gap-1.5 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4" />
+                            Download
+                          </a>
+                        </>
+                      ) : (
+                        <button className="flex-1 flex items-center justify-center gap-1.5 bg-gray-300 text-gray-500 px-4 py-2 rounded-lg text-sm cursor-not-allowed">
+                          <EyeIcon className="h-4 w-4" />
+                          View
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => toggleActive(deck._id || deck.id)}
                         className={`
                           flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-colors
-                          ${deck.active 
-                            ? 'bg-green-100 text-green-800 hover:bg-green-200' /* Improved contrast */
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }
+                          ${deck.active ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
                         `}
                       >
                         <ArrowsRightLeftIcon className="h-4 w-4" />
                         {deck.active ? 'Active' : 'Activate'}
                       </button>
-                    )}
+                      <button
+                        onClick={() => deletePitchDeck(deck._id || deck.id)}
+                        className="flex-1 flex items-center justify-center gap-1.5 bg-red-100 text-red-800 px-4 py-2 rounded-lg text-sm hover:bg-red-200 transition-colors"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Add New Pitch Deck - Empty State */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="rounded-3xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center p-10 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-300"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-white rounded-3xl p-12 shadow-lg text-center">
+              <div className="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                <DocumentPlusIcon className="h-10 w-10 text-indigo-600" />
               </div>
-              <p className="text-center text-gray-600 font-medium">Upload another pitch deck</p>
-              <p className="text-center text-gray-400 text-sm mt-2">Drag & drop or click to upload</p>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">No Pitch Decks Yet</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                Upload your first pitch deck to share with investors and get feedback. A well-structured pitch can significantly increase your chances of securing funding.
+              </p>
+              <button
+                onClick={() =>
+                  window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth',
+                  })
+                }
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 transition-colors transform hover:-translate-y-0.5 shadow-md"
+              >
+                <CloudArrowUpIcon className="h-5 w-5" />
+                Upload Your First Pitch Deck
+              </button>
             </motion.div>
-          </div>
+          )}
         </section>
 
-        {/* Tips Section - Enhanced Design */}
         <section className="mb-12">
           <div className="bg-gradient-to-br from-slate-800 via-indigo-900 to-purple-900 rounded-3xl overflow-hidden shadow-xl"> 
             <div className="p-8 md:p-12 relative">
-              {/* Abstract shapes for visual interest */}
               <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full opacity-10 -mr-20 -mt-20"></div>
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-400 rounded-full opacity-10 -ml-20 -mb-20"></div>
               
@@ -604,7 +726,7 @@ export default function Pitch() {
                       <div className="flex items-center mb-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center mr-3 shadow-md">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1m0 0c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                         </div>
                         <h4 className="font-bold text-white text-lg">Market & Traction</h4>
@@ -645,13 +767,13 @@ export default function Pitch() {
                       <div className="relative">
                         <div className="absolute inset-0 rounded-xl shadow-2xl bg-gradient-to-tr from-indigo-300 to-purple-300 opacity-20 blur-sm transform rotate-3"></div>
                         <img 
-                          src="https://marketplace.canva.com/EAFLBMxBdK4/1/0/1600w/canva-blue-gradient-modern-business-pitch-deck-presentation-ou9ARW-LgFQ.jpg" 
+                          src="https://res.cloudinary.com/dzt4vlcde/image/upload/v1744989840/rf6chzniprtaa9qo2cbf.jpg" 
                           alt="Pitch deck example" 
                           className="relative z-20 max-h-52 object-cover rounded-xl shadow-xl transform transition-transform duration-500 hover:scale-105" 
                         />
                       </div>
                       <a 
-                        href="https://www.canva.com/design/DAGXR4odW_Q/Oj6FAiDFBy93ZdLHY28LfA/view?utm_content=DAGXR4odW_Q&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=ha3d0f71668"
+                        href="https://res.cloudinary.com/dzt4vlcde/image/upload/v1744989840/rf6chzniprtaa9qo2cbf.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="mt-6 inline-flex items-center gap-2 bg-white bg-opacity-95 text-indigo-800 px-6 py-2.5 rounded-lg font-medium text-sm hover:bg-opacity-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -667,13 +789,12 @@ export default function Pitch() {
           </div>
         </section>
 
-        {/* Added section to highlight the sample deck */}
         <section className="mb-16">
           <div className="bg-white rounded-3xl p-8 shadow-md">
             <div className="flex flex-col md:flex-row gap-8 items-center">
               <div className="md:w-1/3">
                 <img 
-                  src="https://marketplace.canva.com/EAFLBMxBdK4/1/0/1600w/canva-blue-gradient-modern-business-pitch-deck-presentation-ou9ARW-LgFQ.jpg" 
+                  src="https://res.cloudinary.com/dzt4vlcde/image/upload/v1744989840/rf6chzniprtaa9qo2cbf.jpg" 
                   alt="Sample pitch deck" 
                   className="w-full h-auto rounded-xl shadow-md"
                 />
@@ -685,7 +806,7 @@ export default function Pitch() {
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <a 
-                    href="https://www.canva.com/design/DAGXR4odW_Q/Oj6FAiDFBy93ZdLHY28LfA/view?utm_content=DAGXR4odW_Q&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=ha3d0f71668"
+                    href="https://res.cloudinary.com/dzt4vlcde/image/upload/v1744989840/rf6chzniprtaa9qo2cbf.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-colors shadow-md"
@@ -693,20 +814,48 @@ export default function Pitch() {
                     <EyeIcon className="h-5 w-5" />
                     View Sample Pitch Deck
                   </a>
-                  <button
+                  <a
+                    href="https://pitchdeck.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 border-2 border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
                   >
                     <CloudArrowUpIcon className="h-5 w-5" />
                     Create Your Own
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
         </section>
+
+        <AnimatePresence>
+          {successMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center"
+            >
+              <CheckCircleIcon className="h-5 w-5 mr-2" />
+              {successMessage}
+            </motion.div>
+          )}
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="fixed bottom-5 right-5 bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center"
+            >
+              <ExclamationCircleIcon className="h-5 w-5 mr-2" />
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* Footer */}
       <footer className="mt-16 text-center text-gray-500 text-sm">
         <p>© 2024 Founders Nexus. All rights reserved.</p>
       </footer>
