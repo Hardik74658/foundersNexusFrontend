@@ -23,7 +23,8 @@ import EditStartup from './components/Pages/EditStartup';
 import ChatPage from './components/ChatPage';
 import AdminDashboard from './components/Pages/AdminDashboard.jsx';
 import Pitch from './components/Pages/Pitch.jsx';
-
+import {StartUps} from './components/Pages/StartUps.jsx';
+ 
 function App() {
   const dispatch = useDispatch();
 
@@ -120,6 +121,14 @@ function App() {
         element={
           <AuthLayout authentication={true}>
             <StartupCreation />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/startups"
+        element={
+          <AuthLayout authentication={true}>
+            <StartUps />
           </AuthLayout>
         }
       />

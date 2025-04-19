@@ -6,17 +6,11 @@ import { Link } from 'react-router-dom';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const dispatch = useDispatch();
-  // Get user data from redux store; fallback to localStorage if needed
   const storedUser = useSelector((state) => state.auth.user);
   const localUserId = localStorage.getItem("userId");
-
-  // Local state to store fetched user info from API (/users/{userId})
   const [userInfo, setUserInfo] = useState(null);
-
-  // Local state to store fetched startup info
   const [currentStartup, setCurrentStartup] = useState(null);
 
-  // Fetch current user's data if userId is available
   useEffect(() => {
     const userId = storedUser?.id || localUserId;
     if (userId) {
@@ -31,7 +25,6 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     }
   }, [storedUser, localUserId]);
 
-  // Fetch current startup details if userInfo.currentStartup exists
   useEffect(() => {
     if (userInfo?.currentStartup) {
       axios
@@ -46,19 +39,22 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     }
   }, [userInfo]);
 
-  // onLogout function as provided
   const onLogout = () => {
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
     dispatch(logout());
   };
 
-  // Define new navigation options based on your app's routing
   const navItems = [
     { 
       name: 'Startup', 
       path: '/startup', 
       icon: 'M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5z'
+    },
+    { 
+      name: 'Startups', 
+      path: '/startups', 
+      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
     },
     { 
       name: 'Profile', 
@@ -82,19 +78,17 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     }
   ];
 
-  // If current startup details are available, replace the "Startup" navigation option
   if (currentStartup) {
     const startupNavIndex = navItems.findIndex(item => item.name === 'Startup');
     if (startupNavIndex !== -1) {
       navItems[startupNavIndex] = {
         name: currentStartup.startup_name,
-        path: `/startup/${currentStartup._id}`, // Adjust path to include startup ID
+        path: `/startup/${currentStartup._id}`,
         icon: currentStartup.logo_url || 'M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17z'
       };
     }
   }
 
-  // Handle the role display: if role is an object, show its 'name' property
   const roleDisplay =
     userInfo && userInfo.role
       ? typeof userInfo.role === 'object'
@@ -104,116 +98,151 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-full w-60 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-30 md:translate-x-0 md:w-60 md:block ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}
+      className={`
+        fixed top-0 left-0 h-full w-60 bg-white shadow-xl rounded-r-3xl
+        transform transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)]
+        z-30 md:translate-x-0 md:w-60 md:block text-3xl
+        ${isSidebarOpen ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'}
+      `}
+      style={{ boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.12)' }}
     >
-      <div className="p-4 space-y-6">
-        {/* Sidebar Header */}
-        <h1 className="font-bold text-2xl text-center md:text-xl">
-          FoundersNexus<span className="text-indigo-600">.</span>
-        </h1>
+      <div className="p-4 h-full flex flex-col justify-between space-y-0">
+        <div className="space-y-6">
+          {/* Sidebar Header */}
+          <div className="flex flex-col items-center space-y-1.5">
+            <span className="inline-block animate-spin-slow">
+              <svg width="30" height="30" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="16" stroke="#6366F1" strokeWidth="3" opacity="0.15"/>
+                <circle cx="18" cy="18" r="10" stroke="#6366F1" strokeWidth="3" strokeDasharray="60 40" />
+              </svg>
+            </span>
+            <h1 className="font-bold text-lg text-center md:text-base tracking-tight select-none">
+              FoundersNexus<span className="text-indigo-600">.</span>
+            </h1>
+          </div>
 
-        {/* Profile Section */}
-        <div className="space-y-2 text-center">
-          <img
-            src={(userInfo && userInfo.profilePicture) || "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80"}
-            alt="User Avatar"
-            className="w-12 md:w-16 rounded-full mx-auto"
-          />
-          <h2 className="font-medium text-md text-indigo-500">
-            {(userInfo && userInfo.fullName) || "Eduard Pantazi"}
-          </h2>
-          <p className="text-xs text-gray-500">
-            {roleDisplay}
-          </p>
-          {currentStartup && (
-            <div className="mt-4 text-sm text-gray-600">
-              <p><strong>Startup:</strong> {currentStartup.startup_name}</p>
-              <p><strong>Description:</strong> {currentStartup.description || "N/A"}</p>
-              <p><strong>Industry:</strong> {currentStartup.industry || "N/A"}</p>
-              {currentStartup.website && (
-                <p>
-                  <strong>Website:</strong>{' '}
-                  <a
-                    href={currentStartup.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-500 underline"
+          {/* Profile Section */}
+          <div className="space-y-1.5 text-center transition-opacity duration-500 animate-fadein">
+            <img
+              src={(userInfo && userInfo.profilePicture) || "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?ixlib=rb-4.0.3&auto=format&fit=crop&w=880&q=80"}
+              alt="User Avatar"
+              className="w-14 h-14 rounded-full mx-auto shadow-md border-2 border-indigo-50 object-cover transition-transform duration-300 hover:scale-105"
+              style={{ transition: 'box-shadow 0.3s' }}
+            />
+            <h2 className="font-medium text-sm text-indigo-500">{(userInfo && userInfo.fullName) || "Eduard Pantazi"}</h2>
+            <p className="text-xs text-gray-400">{roleDisplay}</p>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-100 my-1.5"></div>
+
+          {/* Search Bar */}
+          <div className="flex border border-gray-100 rounded-xl focus-within:ring-2 ring-indigo-100 bg-gray-50 transition-shadow duration-300">
+            <input
+              type="text"
+              className="w-full rounded-l-xl px-2.5 py-1.5 text-base text-gray-600 bg-transparent focus:outline-none"
+              placeholder="Search"
+            />
+            <button className="rounded-r-xl px-2.5 py-1.5 bg-white hover:bg-indigo-50 transition-colors duration-200">
+              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 20 20">
+                <circle cx="9" cy="9" r="7" />
+                <line x1="16" y1="16" x2="13" y2="13" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-100 my-1.5"></div>
+
+          {/* Navigation Menu */}
+          <nav className="space-y-1 flex-1">
+            {navItems.map((item, index) => (
+              <Link
+                key={index}
+                to={item.path}
+                className="
+                  flex items-center space-x-2.5 py-2.5 px-4 text-base text-gray-700 rounded-2xl
+                  transition-all duration-200 ease-in-out
+                  hover:bg-indigo-50 hover:text-indigo-600 group
+                  focus:outline-none focus:ring-2 focus:ring-indigo-200
+                "
+                style={{ minHeight: '40px' }}
+              >
+                {item.icon.startsWith('M') ? (
+                  <svg
+                    className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:text-indigo-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
                   >
-                    {currentStartup.website}
-                  </a>
-                </p>
-              )}
-            </div>
-          )}
+                    <path d={item.icon} />
+                  </svg>
+                ) : (
+                  <img
+                    src={item.icon}
+                    alt="Startup Icon"
+                    className="w-4 h-4 rounded-full transition-transform duration-200 group-hover:scale-110"
+                  />
+                )}
+                <span className="transition-colors duration-200 group-hover:text-indigo-600">{item.name}</span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Divider */}
+          <div className="border-t border-gray-100 my-1.5"></div>
         </div>
-
-        {/* Search Bar */}
-        <div className="flex border-2 border-gray-200 rounded-md focus-within:ring-2 ring-indigo-500">
-          <input
-            type="text"
-            className="w-full rounded-l-md px-2 py-2 text-sm text-gray-600 focus:outline-none"
-            placeholder="Search"
-          />
-          <button className="rounded-r-md px-2 py-2 bg-gray-100">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fillRule="evenodd"
-                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* Navigation Menu */}
-        <nav className="space-y-1">
-          {navItems.map((item, index) => (
-            <Link
-              key={index}
-              to={item.path}
-              className="flex items-center space-x-2 py-3 px-4 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white rounded-2xl transition duration-150 ease-in-out"
-            >
-              {item.icon.startsWith('M') ? (
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d={item.icon} />
-                </svg>
-              ) : (
-                <img src={item.icon} alt="Startup Icon" className="w-5 h-5 rounded-full" />
-              )}
-              <span>{item.name}</span>
-            </Link>
-          ))}
-        </nav>
-
         {/* Logout Button */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-1.5">
           <button
             onClick={onLogout}
-            className="flex items-center w-full py-3 px-4 text-sm text-gray-700 hover:bg-indigo-600 hover:text-white rounded-2xl transition duration-150 ease-in-out"
+            className="
+              flex items-center w-full py-2.5 px-4 text-base text-gray-500 rounded-2xl
+              hover:bg-red-50 hover:text-red-600 transition-all duration-200
+              focus:outline-none focus:ring-2 focus:ring-red-200
+            "
           >
-            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h6a1 1 0 010 2H5v10h5a1 1 0 110 2H4a1 1 0 01-1-1V4z" />
-              <path d="M13 7l3 3-3 3m0-6l-3 3 3 3" />
+            <svg className="w-5 h-5 mr-2 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M17 16l4-4m0 0l-4-4m4 4H7" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M3 12a9 9 0 0118 0 9 9 0 01-18 0z" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             Logout
           </button>
         </div>
-
         {/* Close Button (Mobile Only) */}
         {isSidebarOpen && (
           <button
             onClick={toggleSidebar}
-            className="absolute top-4 right-4 p-2 md:hidden"
+            className="
+              absolute top-4 right-4 p-2 rounded-full bg-white shadow-md border border-gray-100
+              hover:bg-indigo-50 transition-all duration-200 md:hidden
+              focus:outline-none focus:ring-2 focus:ring-indigo-200
+            "
             aria-label="Close Sidebar"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-400 hover:text-indigo-500 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
+      <style>
+        {`
+          @keyframes spin-slow {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+          }
+          .animate-spin-slow {
+            animation: spin-slow 6s linear infinite;
+          }
+          @keyframes fadein {
+            from { opacity: 0; transform: translateY(8px);}
+            to { opacity: 1; transform: none;}
+          }
+          .animate-fadein {
+            animation: fadein 0.8s cubic-bezier(.77,0,.18,1) 0.1s both;
+          }
+        `}
+      </style>
     </aside>
   );
 };
