@@ -1,123 +1,184 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
 export default function TrustedPartners() {
-  // Updated logos array with designations
-  const logos = [
+  // Updated partners array with designations, members count and gradient colors
+  const partners = [
     {
-      alt: 'Peyush Bansal',
+      name: 'Peyush Bansal',
       src: 'https://starsunfolded.com/wp-content/uploads/2022/01/Peyush-Bansal.jpg',
-      width: 158,
-      height: 48,
-      designation: 'CEO, Lenskart',
+      designation: 'Fitness Coach',
+      members: 385,
+      category: 'Fitness',
+      gradient: 'from-purple-500 to-purple-700'
     },
     {
-      alt: 'Aman Gupta',
+      name: 'Aman Gupta',
       src: 'https://starsunfolded.com/wp-content/uploads/2022/01/Aman-Gupta.jpg',
-      width: 158,
-      height: 48,
-      designation: 'Co-founder, boAt',
+      designation: 'Financial Advisor',
+      members: 1425,
+      category: 'Finance',
+      gradient: 'from-orange-500 to-orange-700'
     },
     {
-      alt: 'Deepinder Goyal',
+      name: 'Deepinder Goyal',
       src: 'https://starsunfolded.com/wp-content/uploads/2023/08/Deepinder-Goyals-image.jpg',
-      width: 158,
-      height: 48,
-      designation: 'CEO, Zomato',
+      designation: 'Yoga Instructor',
+      members: 5880,
+      category: 'Wellness',
+      gradient: 'from-pink-500 to-pink-700'
     },
     {
-      alt: 'Anupam Mittal',
+      name: 'Anupam Mittal',
       src: 'https://starsunfolded.com/wp-content/uploads/2022/01/Anupam-Mittal.jpg',
-      width: 158,
-      height: 48,
-      designation: 'Founder, Shaadi.com',
+      designation: 'Photography Expert',
+      members: 2067,
+      category: 'Photography',
+      gradient: 'from-yellow-500 to-yellow-700'
     },
     {
-      alt: 'Vineeta Singh',
+      name: 'Vineeta Singh',
       src: 'https://starsunfolded.com/wp-content/uploads/2022/01/Vineeta-Singhs-picture.jpg',
-      width: 158,
-      height: 48,
-      designation: 'CEO, SUGAR Cosmetics',
-    },
-    {
-      alt: 'Namita Thapar',
-      src: 'https://starsunfolded.com/wp-content/uploads/2022/01/Namita-Thapar.jpg',
-      width: 158,
-      height: 48,
-      designation: 'Executive Director, Emcure Pharmaceuticals',
-    },
-    {
-      alt: 'Nikhil Kamath',
-      src: 'https://starsunfolded.com/wp-content/uploads/2021/04/Nikhil-Kamath.jpg',
-      width: 158,
-      height: 48,
-      designation: 'Co-founder, Zerodha',
-    },
-    {
-      alt: 'Nithin Kamath',
-      src: 'https://starsunfolded.com/wp-content/uploads/2021/05/Nithin-Kamaths-picture.jpg',
-      width: 158,
-      height: 48,
-      designation: 'Co-founder, Zerodha',
+      designation: 'Cooking Classes',
+      members: 1569,
+      category: 'Cooking',
+      gradient: 'from-blue-500 to-blue-700'
     },
   ];
 
-  // PartnerCard component for individual cards
-  function PartnerCard({ src, alt, designation }) {
-    return (
-      <div className="relative w-[300px] h-[400px] rounded-lg shadow-md overflow-hidden">
-        <img src={src} alt={alt} className="w-full h-full object-cover" />
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-          <h3 className="text-white text-lg font-bold">{alt}</h3>
-          <p className="text-gray-300 text-sm">{designation}</p>
-        </div>
-      </div>
-    );
-  }
+  const variantContainer = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const variantItem = {
+    hidden: { y: 20, opacity: 0 },
+    show: { y: 0, opacity: 1, transition: { duration: 0.6 } }
+  };
 
   return (
-    <div className="bg-white py-24 sm:py-32">
+    <section className="py-24 sm:py-32 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <h2 className="text-center text-lg/8 font-semibold text-gray-900">
-          Trusted by the India's Biggest Investors
-        </h2>
+        {/* Section heading */}
+        <div className="text-center mb-16">
+          <motion.h2 
+            className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            Live from what you love.
+          </motion.h2>
+          <motion.p
+            className="text-xl text-gray-600 max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            From fitness gurus to photographers, thousands are making a living with FoundersNexus
+          </motion.p>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <a
+              href="#"
+              className="mt-8 inline-block px-8 py-3 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-200"
+            >
+              Start your business today
+            </a>
+          </motion.div>
+        </div>
 
-        {/* Carousel (Marquee) for medium and larger screens */}
-        <div className="mt-10 relative overflow-hidden hidden md:block">
-          <div className="flex animate-marquee whitespace-nowrap">
-            {logos.concat(logos).map((logo, index) => (
-              <div key={index} className="mx-4 w-[300px]">
-                <PartnerCard src={logo.src} alt={logo.alt} designation={logo.designation} />
+        {/* Partner cards */}
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+          variants={variantContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {partners.map((partner, index) => (
+            <motion.div
+              key={index}
+              variants={variantItem}
+              whileHover={{ y: -5 }}
+              className={`bg-gradient-to-br ${partner.gradient} p-6 rounded-2xl text-white relative overflow-hidden shadow-lg transition-all duration-300 h-64 flex flex-col justify-between`}
+            >
+              {/* Decorative circles */}
+              <div className="absolute -top-10 -right-10 w-24 h-24 rounded-full bg-white opacity-10"></div>
+              <div className="absolute -bottom-6 -left-6 w-16 h-16 rounded-full bg-white opacity-10"></div>
+              
+              <div>
+                <div className="inline-block px-3 py-1 rounded-full bg-white bg-opacity-20 text-sm font-medium tracking-wide mb-2">
+                  {partner.category}
+                </div>
+                <p className="text-3xl font-bold">{partner.members.toLocaleString()}+</p>
+                <p className="text-sm uppercase tracking-wide opacity-80">Members</p>
+              </div>
+              
+              <div className="flex items-center mt-4">
+                <img
+                  src={partner.src}
+                  alt={partner.name}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                />
+                <div className="ml-3">
+                  <p className="font-medium">{partner.name}</p>
+                  <p className="text-sm opacity-80">{partner.designation}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Mobile view carousel - for small screens */}
+        <div className="mt-12 md:hidden overflow-hidden">
+          <div className="flex animate-marquee space-x-4 pb-4">
+            {[...partners, ...partners].map((partner, index) => (
+              <div
+                key={`mobile-${index}`}
+                className={`flex-shrink-0 w-64 bg-gradient-to-br ${partner.gradient} p-6 rounded-2xl text-white relative overflow-hidden`}
+              >
+                <p className="text-2xl font-bold">{partner.members}+</p>
+                <p className="text-sm uppercase tracking-wide opacity-80">Members</p>
+                <p className="mt-4 font-medium">{partner.name}</p>
+                <p className="text-sm opacity-80">{partner.designation}</p>
+                <img
+                  src={partner.src}
+                  alt={partner.name}
+                  className="absolute bottom-2 right-2 w-16 h-16 rounded-full object-cover border-2 border-white border-opacity-30"
+                />
               </div>
             ))}
           </div>
         </div>
-
-        {/* Static Grid for small screens */}
-        <div className="mt-10 block md:hidden">
-          <div className="flex flex-col justify-center items-center sm:grid sm:grid-cols-2 gap-4 lg:grid-cols-3">
-            {logos.map((logo, index) => (
-              <PartnerCard key={index} src={logo.src} alt={logo.alt} designation={logo.designation} />
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* Custom CSS for marquee animation */}
-      <style>
-        {`
-          @keyframes marquee {
-            0% {
-              transform: translateX(0%);
-            }
-            100% {
-              transform: translateX(-50%);
-            }
+      {/* Animation styles */}
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0%);
           }
-          .animate-marquee {
-            animation: marquee 20s linear infinite;
+          100% {
+            transform: translateX(-50%);
           }
-        `}
-      </style>
-    </div>
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
+    </section>
   );
 }

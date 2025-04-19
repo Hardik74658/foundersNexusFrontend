@@ -1,175 +1,218 @@
-// import React from 'react'
-// import { Link } from 'react-router-dom'
-
-// export default function Header()  {
-//   return (
-//     <div className='nav flex gap-8 md:justify-between sticky top-0  items-center bg-white p-8  h-1/12 shadow-md '>
-//         <h1 className='font-mono text-blue-600 md:text-2xl text-lg md:w-1/6'>Founders Nexus</h1>
-//         <div className='nav-links w-3/12 '>
-//             <div className='flex gap-8 text-sm md:text-lg md:justify-between  items-center w-1/2'>
-//                 <a href='#'>Home</a>
-//                 <a href='#'>About</a>
-//                 <a href='#'>Contact</a>
-//             </div>
-//         </div>
-//         <div>
-//             <a className='bg-blue-600 font-semibold text-md cursor-pointer text-white px-4 py-2 rounded-md'>Signup
-//             </a>
-//         </div>
-//     </div>
-//   )
-// }
-
-import React, { useEffect, useRef, useState } from "react"
-import { useDispatch } from "react-redux"
-import { logout } from "../../redux/slices/authSlice"
-
-
-// Avtar with darpdown menu
-const AvatarMenue = () => {
-
-    const [state, setState] = useState(false)
-    const profileRef = useRef()
-    const dispatch = useDispatch()
-
-    const onLogout = () =>{
-        localStorage.removeItem("userId")
-        localStorage.removeItem("role")
-        dispatch(logout())
-    }
-
-    const navigation = [
-        { title: "Dashboard", path: "javascript:void(0)" },
-        { title: "Analytics", path: "javascript:void(0)" },
-        { title: "Profile", path: "javascript:void(0)" },
-        { title: "Settings", path: "javascript:void(0)" },
-    ]
-
-
-    useEffect(() => {
-        const handleDropDown = (e) => {
-            if (!profileRef.current.contains(e.target)) setState(false)
-        }
-        document.addEventListener('click', handleDropDown)
-    }, [])
-
-    return (
-        <div className="relative border-t lg:border-none">
-            <div className="">
-                <button ref={profileRef} className="hidden w-10 h-10 outline-none rounded-full ring-offset-2 ring-gray-200 lg:focus:ring-2 lg:block"
-                    onClick={() => setState(!state)}
-                >
-                    <img
-                        src="https://api.uifaces.co/our-content/donated/xZ4wg2Xj.jpg"
-                        className="w-full h-full rounded-full"
-                    />
-                </button>
-            </div>
-            <ul className={`bg-white top-14 right-0 mt-6 space-y-6 lg:absolute lg:border lg:rounded-md lg:w-52 lg:shadow-md lg:space-y-0 lg:mt-0 ${state ? '' : 'lg:hidden'}`}>
-                {
-                    navigation.map((item, idx) => (
-                        <li key={idx}>
-                            <a className="block text-gray-600 hover:text-gray-900 lg:hover:bg-gray-50 lg:p-3" href={item.path}>
-                                {item.title}
-                            </a>
-                        </li>
-                    ))
-                }
-                <button onClick={onLogout} className="block w-full text-justify text-gray-600 hover:text-gray-900 border-t py-3 lg:hover:bg-gray-50 lg:p-3">
-                    Logout
-                </button>
-            </ul>
-        </div>
-    )
-}
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function Header() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState(null);
 
-    const [state, setState] = useState(false)
+  // Navigation links with potential dropdowns
+  const navItems = [
+    { name: "Features", dropdown: ["For Startups", "For Investors", "Pitch Creation", "Analytics"] },
+    { name: "Use cases", dropdown: ["Founders", "VCs", "Accelerators"] },
+    { name: "Academy", dropdown: ["Tutorials", "Resources", "Blog"] },
+    { name: "Pricing", dropdown: null },
+  ];
 
-    // Replace javascript:void(0) paths with your paths
-    const navigation = [
-        { title: "Support", path: "javascript:void(0)" },
-    ]
+  // Handle scroll effect for transparent to solid header transition
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
 
-    const submenuNav = [
-        { title: "Home", path: "javascript:void(0)" },
-        { title: "About", path: "javascript:void(0)" },
-        { title: "ContactUs", path: "javascript:void(0)" },
-    ]
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (activeDropdown && !event.target.closest('.nav-dropdown-container')) {
+        setActiveDropdown(null);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [activeDropdown]);
 
-    return (
-        <header className="text-base lg:text-sm sticky z-50 top-0 mb-16 bg-white shadow-md">
-            <div className={`bg-white items-center gap-x-14 px-4 max-w-screen-xl mx-auto lg:flex lg:px-8 lg:static ${state ? "h-full fixed inset-x-0" : ""}`}>
-                <div className="flex items-center justify-between py-3 lg:py-5 lg:block">
-                    <a href="javascript:void(0)" className="text-2xl sm:text-3xl  font-mono text-blue-700">
-                        FoundersNexus
-                    </a>
-                    <div className="lg:hidden">
-                        <button className="text-gray-500 hover:text-gray-800"
-                            onClick={() => setState(!state)}
-                        >
-                            {
-                                state ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                    </svg>
-                                ) : (
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                                        <path fillRule="evenodd" d="M3 6.75A.75.75 0 013.75 6h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 6.75zM3 12a.75.75 0 01.75-.75h16.5a.75.75 0 010 1.5H3.75A.75.75 0 013 12zm8.25 5.25a.75.75 0 01.75-.75h8.25a.75.75 0 010 1.5H12a.75.75 0 01-.75-.75z" clipRule="evenodd" />
-                                    </svg>
+  return (
+    <header 
+      className={`fixed w-full top-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white shadow-sm py-2" : "bg-transparent py-5"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link to="/" className="flex items-center">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                FoundersNexus
+              </span>
+            </Link>
+          </div>
 
-                                )
-                            }
-                        </button>
-                    </div>
-                </div>
-                <div className={`nav-menu flex-1 pb-28 mt-8 overflow-y-auto max-h-screen lg:block lg:overflow-visible lg:pb-0 lg:mt-0 ${state ? "" : "hidden"}`}>
-                    <ul className="items-center space-y-6 lg:flex lg:space-x-6 lg:space-y-0">
-                        <form onSubmit={(e) => e.preventDefault()} className='flex-1 items-center justify-start pb-4 lg:flex lg:pb-0'>
-                            <div className="flex items-center gap-1 px-2 border rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <input
-                                    type="text"
-                                    placeholder="Search"
-                                    className="w-full px-2 py-2 text-gray-500 bg-transparent rounded-md outline-none"
-                                />
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-10">
+            {navItems.map((item) => (
+              <div key={item.name} className="relative nav-dropdown-container">
+                <button
+                  className={`text-gray-600 group inline-flex items-center transition-all duration-200 font-medium hover:text-blue-600 ${
+                    activeDropdown === item.name ? "text-blue-600" : ""
+                  }`}
+                  onClick={() => setActiveDropdown(activeDropdown === item.name ? null : item.name)}
+                >
+                  {item.name}
+                  {item.dropdown && (
+                    <ChevronDownIcon
+                      className={`ml-1 h-4 w-4 transition-transform duration-300 ease-in-out ${
+                        activeDropdown === item.name ? "transform rotate-180 text-blue-600" : ""
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {/* Enhanced Dropdown menu */}
+                {item.dropdown && (
+                  <div 
+                    className={`absolute z-10 -ml-4 mt-3 w-screen max-w-md transform px-2 sm:px-0 lg:ml-0 lg:left-1/2 lg:-translate-x-1/2 transition-all duration-300 ease-in-out origin-top-center ${
+                      activeDropdown === item.name 
+                        ? "opacity-100 scale-100 translate-y-0" 
+                        : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
+                    }`}
+                  >
+                    <div className="rounded-3xl shadow-lg ring-1 ring-black/5 overflow-hidden backdrop-blur-sm bg-white/95 border border-gray-100">
+                      <div className="relative grid gap-3 bg-gradient-to-b from-white to-gray-50 px-5 py-4 sm:gap-6 sm:p-6">
+                        {item.dropdown.map((dropdownItem, index) => (
+                          <a
+                            key={dropdownItem}
+                            href="#"
+                            className={`-m-2 p-3 flex items-start rounded-2xl hover:bg-blue-50/80 transition-all duration-200 ease-out transform hover:-translate-y-0.5 hover:shadow-sm`}
+                            style={{ 
+                              transitionDelay: `${index * 30}ms`,
+                              animation: activeDropdown === item.name ? `fadeInUp 300ms ease-out forwards ${100 + index * 60}ms` : 'none',
+                              opacity: activeDropdown === item.name ? 1 : 0
+                            }}
+                          >
+                            <div className="ml-1">
+                              <p className="text-base font-medium text-gray-900 group-hover:text-blue-600">{dropdownItem}</p>
                             </div>
-                        </form>
-                        {
-                            navigation.map((item, idx) => {
-                                return (
-                                    <li key={idx}>
-                                        <a href={item.path} className="block  text-gray-700 hover:text-gray-900">
-                                            {item.title}
-                                        </a>
-                                    </li>
-                                )
-                            })
-                        }
-                        <AvatarMenue />
-                    </ul>
-                </div>
-            </div>
-            <nav className="">
-                <ul className="flex items-center gap-x-3 max-w-screen-xl mx-auto px-4 overflow-x-auto lg:px-8">
-                    {
-                        submenuNav.map((item, idx) => {
-                            return (
-                                // Replace [idx == 0] with [window.location.pathname == item.path]
-                                <li key={idx} className={`py-1 ${idx == 0 ? "border-b-2 border-indigo-600" : ""}`}>
-                                    <a href={item.path} className="block text-sm sm:text-lg py-2 px-3 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 duration-150">
-                                        {item.title}
-                                    </a>
-                                </li>
-                            )
-                        })
-                    }
-                </ul>
-            </nav>
-        </header>
-    )
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          {/* CTA Buttons */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              to="/login"
+              className="whitespace-nowrap text-gray-600 hover:text-blue-600 font-medium transition-colors"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/signup"
+              className="whitespace-nowrap px-6 py-3 rounded-full bg-yellow-400 text-gray-900 font-medium hover:bg-yellow-300 transition-colors shadow-md hover:shadow-lg transform hover:-translate-y-0.5 duration-200"
+            >
+              Get started
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="flex md:hidden">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none"
+              aria-expanded="false"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <span className="sr-only">Open main menu</span>
+              {!mobileMenuOpen ? (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              ) : (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu - enhance with similar styling */}
+      <div className={`md:hidden transition-all duration-300 ease-in-out ${
+        mobileMenuOpen ? "opacity-100 max-h-96" : "opacity-0 max-h-0 overflow-hidden"
+      }`}>
+        <div className="pt-2 pb-3 space-y-1">
+          {navItems.map((item, idx) => (
+            <a
+              key={item.name}
+              href="#"
+              className="block pl-3 pr-4 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50/60 rounded-lg mx-2 transition-all duration-200"
+              style={{ 
+                transitionDelay: `${idx * 50}ms`,
+                animation: mobileMenuOpen ? `fadeInRight 300ms ease-out forwards ${100 + idx * 60}ms` : 'none'
+              }}
+            >
+              {item.name}
+            </a>
+          ))}
+        </div>
+        <div className="pt-4 pb-3 border-t border-gray-200">
+          <div className="flex items-center justify-between px-4">
+            <Link
+              to="/login"
+              className="block text-base font-medium text-gray-700 hover:text-blue-600 transition-colors duration-200"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/signup"
+              className="block px-4 py-2 rounded-full text-base font-medium text-gray-900 bg-yellow-400 hover:bg-yellow-300 transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-md"
+            >
+              Get started
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Add keyframe animations */}
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fadeInRight {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+      `}</style>
+    </header>
+  );
 }
