@@ -99,7 +99,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   return (
     <aside
       className={`
-        fixed top-0 left-0 h-full w-60 bg-white shadow-xl rounded-r-3xl
+        fixed top-0 left-0 h-full w-60 bg-white shadow-xl  rounded-r-3xl
         transform transition-all duration-500 ease-[cubic-bezier(.77,0,.18,1)]
         z-30 md:translate-x-0 md:w-60 md:block text-3xl
         ${isSidebarOpen ? 'translate-x-0 opacity-100' : '-translate-x-8 opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto'}

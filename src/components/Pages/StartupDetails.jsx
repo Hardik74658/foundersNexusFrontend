@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 // Fix the image import
 import teamMeeting from '../../assets/team-meeting.png';
@@ -209,9 +209,7 @@ const StartupDetails = () => {
             )}
           </div>
           <div className="flex space-x-6 text-gray-600">
-            <a href="#" className="hover:text-gray-900">Our Startups</a>
-            <a href="#" className="hover:text-gray-900">Founder Hub</a>
-            <a href="#" className="hover:text-gray-900">Market Insights</a>
+            <Link to="/pitch" className="hover:text-gray-900">Pitch</Link>
           </div>
         </div>
         

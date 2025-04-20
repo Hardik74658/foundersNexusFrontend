@@ -64,6 +64,7 @@ function App() {
             name: response.data.fullName,
             email: response.data.email,
             currentStartup: response.data.currentStartup,
+            profilePicture: response.data.profilePicture,
           };
           dispatch(loggedIn(serializableUserData));
         } else {

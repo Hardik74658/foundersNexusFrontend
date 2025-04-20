@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 
 // New Upload Loader component with page flipping animation
 const UploadLoader = () => {
@@ -214,24 +215,95 @@ const UploadLoader = () => {
         </div>
     );
 };
-
 const Loader = () => {
     return (
-        <div className="w-full h-screen flex items-center justify-center">
-            <div className="grid gap-3">
-                <div className="flex items-center justify-center">
-                    <svg className="animate-spin border-indigo-300"
-                        xmlns="http://www.w3.org/2000/svg" width="56" height="56"
-                        viewBox="0 0 56 56" fill="none">
-                        <circle cx="28" cy="28" r="26" stroke="#4F46E5"
-                            strokeWidth="4" strokeDasharray="12 12" />
-                    </svg>
-                </div>
-                <span className="text-black text-sm font-normal leading-snug">Loading...</span>
-            </div>
+      <StyledWrapper>
+        <div className="pyramid-loader">
+          <div className="wrapper">
+            <span className="side side1" />
+            <span className="side side2" />
+            <span className="side side3" />
+            <span className="side side4" />
+            <span className="shadow" />
+          </div>
         </div>
+      </StyledWrapper>
     );
-};
-
+  }
+  
+  const StyledWrapper = styled.div`
+    .pyramid-loader {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      display: block;
+      transform-style: preserve-3d;
+      transform: rotateX(-20deg);
+    }
+  
+    .wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      animation: spin 4s linear infinite;
+    }
+  
+    @keyframes spin {
+      100% {
+        transform: rotateY(360deg);
+      }
+    }
+  
+    .pyramid-loader .wrapper .side {
+      width: 70px;
+      height: 70px;
+      /* you can choose any gradient or color you want */
+      /* background: radial-gradient( #2F2585 10%, #F028FD 70%, #2BDEAC 120%); */
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      transform-origin: center top;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    }
+  
+    .pyramid-loader .wrapper .side1 {
+      transform: rotateZ(-30deg) rotateY(90deg);
+      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
+    }
+  
+    .pyramid-loader .wrapper .side2 {
+      transform: rotateZ(30deg) rotateY(90deg);
+      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
+    }
+  
+    .pyramid-loader .wrapper .side3 {
+      transform: rotateX(30deg);
+      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
+    }
+  
+    .pyramid-loader .wrapper .side4 {
+      transform: rotateX(-30deg);
+      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
+    }
+  
+    .pyramid-loader .wrapper .shadow {
+      width: 60px;
+      height: 60px;
+      background: #8b5ad5;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto;
+      transform: rotateX(90deg) translateZ(-40px);
+      filter: blur(12px);
+    }`;
+  
+  
 export { UploadLoader, Loader };
 export default Loader;
