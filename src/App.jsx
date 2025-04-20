@@ -20,11 +20,11 @@ import ResetPassword from './components/ResetPassword.jsx';
 import Users from './components/Pages/Users.jsx';
 import StartupDetails from './components/Pages/StartupDetails.jsx';
 import EditStartup from './components/Pages/EditStartup';
-import ChatPage from './components/ChatPage';
+import ChatPage from './components/ChatPage.jsx';
 import AdminDashboard from './components/Pages/AdminDashboard.jsx';
 import Pitch from './components/Pages/Pitch.jsx';
 import {StartUps} from './components/Pages/StartUps.jsx';
- 
+
 function App() {
   const dispatch = useDispatch();
 
@@ -225,6 +225,14 @@ function App() {
       {/* Add Chat route */}
       <Route
         path="/chat"
+        element={
+          <AuthLayout authentication={true}>
+            <ChatPage />
+          </AuthLayout>
+        }
+      />
+      <Route
+        path="/chat/:otherUserId"
         element={
           <AuthLayout authentication={true}>
             <ChatPage />

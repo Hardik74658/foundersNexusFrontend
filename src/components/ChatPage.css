@@ -1,0 +1,43 @@
+/* Hide scrollbars but allow scrolling */
+.chat-inbox .tjs-inbox__list,
+.chat-main .tjs-chatbox__messages {
+  scrollbar-width: thin;
+  scrollbar-color: #c7d2fe #f9fafb;
+}
+
+.chat-inbox .tjs-inbox__list::-webkit-scrollbar,
+.chat-main .tjs-chatbox__messages::-webkit-scrollbar {
+  width: 8px;
+  background: #f9fafb;
+}
+
+.chat-inbox .tjs-inbox__list::-webkit-scrollbar-thumb,
+.chat-main .tjs-chatbox__messages::-webkit-scrollbar-thumb {
+  background: #c7d2fe;
+  border-radius: 8px;
+}
+
+.chat-root {
+  min-height: calc(100vh - 64px);
+  background: linear-gradient(135deg, #f1f5ff 0%, #f9fafb 100%);
+}
+
+.chat-inbox {
+  box-shadow: 0 6px 32px 0 rgba(60,72,88,0.08);
+}
+
+.chat-main {
+  box-shadow: 0 6px 32px 0 rgba(60,72,88,0.10);
+}
+
+@media (max-width: 900px) {
+  .chat-root {
+    flex-direction: column;
+  }
+  .chat-inbox,
+  .chat-main {
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
