@@ -158,10 +158,10 @@ const PostDetails = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50">
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full blur-md bg-indigo-300 opacity-50"></div>
-          <div className="animate-spin rounded-full h-14 w-14 border-4 border-indigo-500 border-t-transparent relative z-10"></div>
+      <div className="flex justify-center items-center min-h-screen bg-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full bg-indigo-200 mb-3"></div>
+          <div className="h-2 w-24 bg-indigo-200 rounded"></div>
         </div>
       </div>
     );
@@ -169,83 +169,70 @@ const PostDetails = () => {
   
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 px-4 text-center">
-        <div className="rounded-full bg-red-50 p-6 mb-6 shadow-inner">
-          <svg className="h-12 w-12 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white px-4 text-center">
+        <div className="rounded-full bg-red-50 p-6 mb-6">
+          <svg className="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-3">Oops! Something went wrong</h3>
-        <p className="text-gray-600 mb-8 max-w-md">{error}</p>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h3>
+        <p className="text-gray-600 mb-6 max-w-md">{error}</p>
         <button 
           onClick={handleGoBack}
-          className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-full shadow-md hover:bg-indigo-700 transition-all hover:shadow-lg flex items-center"
+          className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition-all"
         >
-          <ArrowLeftIcon className="h-5 w-5 mr-2" />
-          Go Back
+          <span className="flex items-center">
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Go Back
+          </span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Toast Message */}
       {showToast && <Toast message={toastMessage} type={toastType} />}
       
-      {/* Modern Header with cleaner design */}
-      <header className="sticky top-0 z-10 bg-white bg-opacity-90 backdrop-blur-lg shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
-            <button 
-              onClick={handleGoBack}
-              className="group flex items-center text-gray-700 hover:text-indigo-600 transition-colors"
-            >
-              <div className="bg-indigo-50 group-hover:bg-indigo-100 p-2 rounded-full mr-2 transition-colors">
-                <ArrowLeftIcon className="h-5 w-5" />
-              </div>
-              <span className="font-medium">Back</span>
-            </button>
-            
-            <div className="flex space-x-3">
-              <button className="bg-indigo-50 hover:bg-indigo-100 p-3 rounded-full text-indigo-600 transition-colors">
-                <BookmarkIcon className="h-5 w-5" />
-              </button>
-              <button className="bg-indigo-50 hover:bg-indigo-100 p-3 rounded-full text-indigo-600 transition-colors">
-                <ShareIcon className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
-      {/* Redesigned Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        <div className="bg-white shadow-sm rounded-3xl overflow-hidden mb-12 border border-gray-100">
-          {/* Hero Image with better scaling */}
-          {post.image_url && (
-            <div className="relative h-[50vh] overflow-hidden rounded-t-3xl">
-              <img 
-                src={post.image_url}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
+      <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        {/* Main Content Area */}
+        <div className="w-full lg:w-2/3">
+          {/* Back Button */}
+          <button 
+            onClick={handleGoBack}
+            className="flex items-center text-gray-700 hover:text-indigo-600 mb-6 transition-colors"
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
           
-          <div className="p-8">
-            {/* Post Title and Author Info */}
-            <div className="mb-8">
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 leading-tight">
+          {/* Post Content Card */}
+          <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm mb-8">
+            {/* Hero Image with better scaling */}
+            {post.image_url && (
+              <div className="relative h-[400px] overflow-hidden">
+                <img 
+                  src={post.image_url}
+                  alt={post.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            
+            <div className="p-8">
+              {/* Post Title */}
+              <h1 className="text-3xl font-bold text-gray-900 mb-6">
                 {post.title}
               </h1>
               
-              <div className="flex items-center">
+              {/* Author Info */}
+              <div className="flex items-center mb-8">
                 <img
                   src={post.user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.fullName)}&background=random`}
                   alt={post.user.fullName}
                   onClick={() => goToUserProfile(post.user._id)}
-                  className="w-12 h-12 rounded-full object-cover cursor-pointer border-2 border-indigo-100"
+                  className="w-12 h-12 rounded-full object-cover cursor-pointer"
                 />
                 <div className="ml-3">
                   <p className="font-medium text-gray-900 hover:text-indigo-600 cursor-pointer" onClick={() => goToUserProfile(post.user._id)}>
@@ -254,163 +241,201 @@ const PostDetails = () => {
                   <p className="text-sm text-gray-500">{formatDate(post.createdAt)}</p>
                 </div>
               </div>
-            </div>
-            
-            {/* Post Content */}
-            <div className="prose prose-lg max-w-none mb-10">
-              <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
-                {post.content}
-              </p>
-            </div>
-            
-            {/* Engagement Metrics with updated styling */}
-            <div className="flex items-center justify-between pt-6 border-t border-gray-100">
-              <div className="flex items-center gap-8">
-                <button 
-                  onClick={handleLike}
-                  className={`flex items-center gap-2 transition-all ${
-                    animateLike ? 'scale-110' : 'scale-100'
-                  }`}
-                >
-                  {hasUserLiked ? (
-                    <HeartIconSolid className="w-6 h-6 text-indigo-600" />
-                  ) : (
-                    <HeartIconOutline className="w-6 h-6 text-gray-500 hover:text-indigo-600" />
-                  )}
-                  <span className="text-sm font-semibold">{post.likes?.length || 0} likes</span>
-                </button>
-                
-                <button 
-                  className="flex items-center gap-2"
-                  onClick={() => document.getElementById('comments-section').scrollIntoView({ behavior: 'smooth' })}
-                >
-                  <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-gray-500 hover:text-indigo-600" />
-                  <span className="text-sm font-semibold">{post.commentsData?.length || 0} comments</span>
-                </button>
+              
+              {/* Post Content */}
+              <div className="prose max-w-none mb-8">
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {post.content}
+                </p>
               </div>
               
-              <button className="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                Report
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Redesigned Comments Section */}
-        <div id="comments-section" className="mb-16 scroll-mt-20">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-              <div className="bg-indigo-100 text-indigo-600 rounded-full p-2">
-                <ChatBubbleBottomCenterTextIcon className="h-6 w-6" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Discussion ({post.commentsData?.length || 0})
-              </h2>
-            </div>
-          </div>
-          
-          {/* New Comment Form - Updated Design */}
-          <div className="bg-white shadow-sm rounded-3xl p-6 mb-10 border border-gray-100 transition-all duration-300 hover:border-indigo-100">
-            <div className="flex items-start gap-4 mb-6">
-              {currentUserData && currentUserData.profilePicture ? (
-                <img
-                  src={currentUserData.profilePicture}
-                  alt={currentUserData.name}
-                  className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100"
-                />
-              ) : (
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <UserCircleIcon className="w-8 h-8 text-indigo-400" />
+              {/* Engagement Metrics */}
+              <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                <div className="flex items-center gap-6">
+                  <button 
+                    onClick={handleLike}
+                    className={`flex items-center gap-2 ${animateLike ? 'scale-110' : 'scale-100'} transition-all`}
+                  >
+                    {hasUserLiked ? (
+                      <HeartIconSolid className="w-5 h-5 text-indigo-600" />
+                    ) : (
+                      <HeartIconOutline className="w-5 h-5 text-gray-500 hover:text-indigo-600" />
+                    )}
+                    <span className="text-sm font-medium">{post.likes?.length || 0}</span>
+                  </button>
+                  
+                  <button 
+                    className="flex items-center gap-2"
+                    onClick={() => document.getElementById('comments-section').scrollIntoView({ behavior: 'smooth' })}
+                  >
+                    <ChatBubbleBottomCenterTextIcon className="w-5 h-5 text-gray-500" />
+                    <span className="text-sm font-medium">{post.commentsData?.length || 0}</span>
+                  </button>
                 </div>
-              )}
-              
-              <div className="flex-1">
-                <p className="font-medium text-gray-900 mb-1">{currentUserData?.name || 'Anonymous'}</p>
-                <p className="text-xs text-indigo-600">Share your thoughts</p>
+                
+                <div className="flex gap-3">
+                  <button className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <BookmarkIcon className="w-5 h-5 text-gray-600" />
+                  </button>
+                  <button className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <ShareIcon className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            <div className="relative mb-4">
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:outline-none focus:border-indigo-300 transition-all text-gray-700 placeholder-gray-400"
-                placeholder="What are your thoughts on this post?"
-                rows="3"
-                disabled={isSubmitting}
-              ></textarea>
-            </div>
-            
-            <div className="flex justify-end">
-              <button
-                onClick={handlePostComment}
-                disabled={!commentText.trim() || isSubmitting}
-                className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all ${
-                  !commentText.trim() || isSubmitting
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow-md"
-                }`}
-              >
-                {isSubmitting ? "Posting..." : "Post Comment"}
-              </button>
             </div>
           </div>
           
-          {/* Comments List */}
-          {post.commentsData && post.commentsData.length > 0 ? (
-            <div className="space-y-4">
-              {post.commentsData.map((comment) => (
-                <div 
-                  key={comment._id} 
-                  className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100 hover:border-indigo-100 transition-all"
-                >
-                  <div className="flex">
+          {/* Comments Section */}
+          <div id="comments-section" className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+              <ChatBubbleBottomCenterTextIcon className="h-5 w-5 mr-2 text-indigo-500" />
+              Comments ({post.commentsData?.length || 0})
+            </h2>
+            
+            {/* New Comment Form */}
+            <div className="mb-8 border-b border-gray-100 pb-8">
+              <div className="flex items-start gap-3 mb-4">
+                {currentUserData && currentUserData.profilePicture ? (
+                  <img
+                    src={currentUserData.profilePicture}
+                    alt={currentUserData.name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <UserCircleIcon className="w-6 h-6 text-indigo-400" />
+                  </div>
+                )}
+                
+                <div className="flex-1">
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 focus:outline-none transition-all text-gray-700 text-sm"
+                    placeholder="Add a comment..."
+                    rows="3"
+                    disabled={isSubmitting}
+                  ></textarea>
+                  
+                  <div className="flex justify-end mt-3">
+                    <button
+                      onClick={handlePostComment}
+                      disabled={!commentText.trim() || isSubmitting}
+                      className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+                        !commentText.trim() || isSubmitting
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      }`}
+                    >
+                      {isSubmitting ? "Posting..." : "Post Comment"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Comments List */}
+            {post.commentsData && post.commentsData.length > 0 ? (
+              <div className="space-y-6">
+                {post.commentsData.map((comment) => (
+                  <div key={comment._id} className="flex gap-3">
                     {/* User Avatar */}
                     <img
                       src={comment.user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user.fullName)}&background=random`}
                       alt={comment.user.fullName}
                       onClick={() => goToUserProfile(comment.user._id)}
-                      className="w-10 h-10 rounded-full object-cover cursor-pointer flex-shrink-0 border-2 border-indigo-50"
+                      className="w-10 h-10 rounded-full object-cover cursor-pointer flex-shrink-0"
                     />
                     
                     {/* Comment Content */}
-                    <div className="ml-3 flex-1">
+                    <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <button
                           onClick={() => goToUserProfile(comment.user._id)}
-                          className="text-sm font-medium text-gray-900 hover:text-indigo-600 transition-colors"
+                          className="text-sm font-medium text-gray-900 hover:text-indigo-600"
                         >
                           {comment.user.fullName}
                         </button>
                         <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
                       </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap leading-relaxed">{comment.content}</p>
+                      <p className="text-gray-700 text-sm">{comment.content}</p>
                       
                       {/* Comment Actions */}
-                      <div className="mt-2 flex items-center gap-4 text-xs text-gray-500">
-                        <button className="hover:text-indigo-600 transition-colors">Reply</button>
-                        <button className="hover:text-indigo-600 transition-colors">Share</button>
+                      <div className="mt-2 flex items-center gap-4">
+                        <button className="text-xs text-gray-500 hover:text-indigo-600">Reply</button>
+                        <button className="text-xs text-gray-500 hover:text-indigo-600">Like</button>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-3xl p-8 text-center shadow-sm border border-gray-100">
-              <div className="inline-flex rounded-full bg-indigo-100 p-4 mb-4">
-                <ChatBubbleBottomCenterTextIcon className="h-8 w-8 text-indigo-500" />
+                ))}
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Join the conversation</h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-4 text-sm">Be the first to share your thoughts on this post!</p>
-              <button
-                onClick={() => document.querySelector('textarea').focus()}
-                className="px-5 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors font-medium rounded-full text-sm"
-              >
-                Add a comment
+            ) : (
+              <div className="text-center py-8">
+                <ChatBubbleBottomCenterTextIcon className="h-8 w-8 text-indigo-200 mx-auto mb-2" />
+                <h3 className="text-lg font-medium text-gray-800 mb-1">No comments yet</h3>
+                <p className="text-gray-500 text-sm mb-4">Be the first to share your thoughts!</p>
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Sidebar - Related Content */}
+        <div className="w-full lg:w-1/3">
+          <div className="sticky top-6">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 mb-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Unlock your learning journey now!</h3>
+              <p className="text-gray-600 text-sm mb-6">Provide innovative designs that align with user expectations and business goals.</p>
+              
+              <div className="text-3xl font-bold text-gray-900 mb-4">$99</div>
+              
+              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-xl font-medium mb-3 flex items-center justify-center transition-colors">
+                <BookmarkIcon className="w-5 h-5 mr-2" />
+                Save Post
+              </button>
+              
+              <button className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 py-3 px-4 rounded-xl font-medium transition-colors">
+                Share Post
               </button>
             </div>
-          )}
+            
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Post Details</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="bg-indigo-100 p-2 rounded-full mr-3">
+                    <ChatBubbleBottomCenterTextIcon className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Comments</p>
+                    <p className="text-xs text-gray-500">{post.commentsData?.length || 0} discussions</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-indigo-100 p-2 rounded-full mr-3">
+                    <HeartIconOutline className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Likes</p>
+                    <p className="text-xs text-gray-500">{post.likes?.length || 0} appreciations</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="bg-indigo-100 p-2 rounded-full mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Posted</p>
+                    <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
