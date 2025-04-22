@@ -90,9 +90,9 @@ export default function Header() {
                     <div className="rounded-3xl shadow-lg ring-1 ring-black/5 overflow-hidden backdrop-blur-sm bg-white/95 border border-gray-100">
                       <div className="relative grid gap-3 bg-gradient-to-b from-white to-gray-50 px-5 py-4 sm:gap-6 sm:p-6">
                         {item.dropdown.map((dropdownItem, index) => (
-                          <a
+                          <Link
                             key={dropdownItem}
-                            href="#"
+                            to="/posts"
                             className={`-m-2 p-3 flex items-start rounded-2xl hover:bg-blue-50/80 transition-all duration-200 ease-out transform hover:-translate-y-0.5 hover:shadow-sm`}
                             style={{ 
                               transitionDelay: `${index * 30}ms`,
@@ -103,7 +103,7 @@ export default function Header() {
                             <div className="ml-1">
                               <p className="text-base font-medium text-gray-900 group-hover:text-blue-600">{dropdownItem}</p>
                             </div>
-                          </a>
+                          </Link>
                         ))}
                       </div>
                     </div>

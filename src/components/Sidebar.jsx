@@ -4,7 +4,18 @@ import axios from 'axios';
 import { logout } from '../redux/slices/authSlice';
 import { Link } from 'react-router-dom';
 
-const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
+import {
+  UserIcon,
+  BuildingOfficeIcon,
+  ChatBubbleLeftRightIcon,
+  DocumentTextIcon,
+  BriefcaseIcon,
+  PencilIcon,
+  PresentationChartBarIcon,
+  Squares2X2Icon
+} from '@heroicons/react/24/outline';
+
+const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
   const dispatch = useDispatch();
   const storedUser = useSelector((state) => state.auth.user);
   const localUserId = localStorage.getItem("userId");
@@ -45,36 +56,43 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     dispatch(logout());
   };
 
+  const role =
+    userInfo && userInfo.role
+      ? typeof userInfo.role === 'object'
+        ? userInfo.role.name
+        : userInfo.role
+      : userRole;
+
   const navItems = [
     { 
       name: 'Startup', 
       path: '/startup', 
-      icon: 'M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5z'
+      icon: BriefcaseIcon
     },
     { 
       name: 'Startups', 
       path: '/startups', 
-      icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
+      icon: BuildingOfficeIcon
     },
     { 
       name: 'Profile', 
       path: `/user/${localUserId}`, 
-      icon: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z'
+      icon: UserIcon
     },
     { 
       name: 'Posts', 
       path: '/posts', 
-      icon: 'M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5zM15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z'
+      icon: DocumentTextIcon
     },
     { 
       name: 'Users', 
       path: '/users', 
-      icon: 'M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z'
+      icon: UserIcon
     },
     { 
       name: 'Chat',
       path: '/chat',
-      icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z'
+      icon: ChatBubbleLeftRightIcon
     }
   ];
 
@@ -84,9 +102,22 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       navItems[startupNavIndex] = {
         name: currentStartup.startup_name,
         path: `/startup/${currentStartup._id}`,
-        icon: currentStartup.logo_url || 'M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17z'
+        icon: currentStartup.logo_url // string URL
       };
     }
+  }
+
+  let filteredNavItems = navItems;
+  if (role === 'Investor') {
+    filteredNavItems = navItems.filter(item => item.name !== 'Startup');
+  } else if (role === 'Admin') {
+    filteredNavItems = [
+      {
+        name: 'Dashboard',
+        path: '/admin',
+        icon: Squares2X2Icon
+      }
+    ];
   }
 
   const roleDisplay =
@@ -156,7 +187,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
           {/* Navigation Menu */}
           <nav className="space-y-1 flex-1">
-            {navItems.map((item, index) => (
+            {filteredNavItems.map((item, index) => (
               <Link
                 key={index}
                 to={item.path}
@@ -168,20 +199,15 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 "
                 style={{ minHeight: '40px' }}
               >
-                {item.icon.startsWith('M') ? (
-                  <svg
-                    className="w-4 h-4 transition-transform duration-200 group-hover:scale-110 group-hover:text-indigo-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d={item.icon} />
-                  </svg>
-                ) : (
+                {/* Directly render icon: if string, render img; else, render as component */}
+                {typeof item.icon === 'string' ? (
                   <img
                     src={item.icon}
                     alt="Startup Icon"
-                    className="w-4 h-4 rounded-full transition-transform duration-200 group-hover:scale-110"
+                    className="w-5 h-5 rounded-full transition-transform duration-200 group-hover:scale-110"
                   />
+                ) : (
+                  <item.icon className="w-5 h-5 transition-transform duration-200 group-hover:scale-110 group-hover:text-indigo-500" />
                 )}
                 <span className="transition-colors duration-200 group-hover:text-indigo-600">{item.name}</span>
               </Link>

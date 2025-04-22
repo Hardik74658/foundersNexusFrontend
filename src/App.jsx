@@ -65,6 +65,7 @@ function App() {
             email: response.data.email,
             currentStartup: response.data.currentStartup,
             profilePicture: response.data.profilePicture,
+            role : response.data.role.name 
           };
           dispatch(loggedIn(serializableUserData));
         } else {

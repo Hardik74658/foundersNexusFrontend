@@ -5,6 +5,7 @@ import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import Loader from '../layout/Loader';
 import AsyncSelect from 'react-select/async';
+import { useSelector } from 'react-redux';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -39,6 +40,11 @@ const EditStartup = () => {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   };
+
+  const user = useSelector((state) => state.auth.user);
+
+  // Add a state to track if user is authorized to edit
+  const [isAuthorized, setIsAuthorized] = useState(null);
 
   // Fetch startup data on component mount
   useEffect(() => {
@@ -80,18 +86,41 @@ const EditStartup = () => {
         setOriginalFundings(JSON.stringify(data.previous_fundings));
         
         setLogoPreview(data.logo_url);
+
+        // Authorization check: Only founders can edit
+        let founderIds = [];
+        if (Array.isArray(data.founders)) {
+          founderIds = data.founders.map(f =>
+            typeof f === 'object' && f._id ? f._id : f
+          );
+        }
+        const userId = user?.id || user?._id;
+        if (founderIds.includes(userId)) {
+          setIsAuthorized(true);
+        } else {
+          setIsAuthorized(false);
+        }
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching startup data:', error);
         setError('Failed to load startup data');
         setLoading(false);
+        setIsAuthorized(false); // If error, block access
       }
     };
 
     if (id) {
       fetchStartupData();
     }
-  }, [id]);
+  }, [id, user]);
+
+  // Redirect if not authorized
+  useEffect(() => {
+    if (isAuthorized === false) {
+      navigate('/startups');
+    }
+  }, [isAuthorized, navigate]);
 
   // Check for changes in data
   useEffect(() => {
@@ -496,6 +525,10 @@ const EditStartup = () => {
   // Loading and error states
   if (loading || isSaving) {
     return <Loader />;
+  }
+
+  if (isAuthorized === false) {
+    return null;
   }
 
   if (error) {
