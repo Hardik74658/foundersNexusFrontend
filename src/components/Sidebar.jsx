@@ -26,7 +26,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
     const userId = storedUser?.id || localUserId;
     if (userId) {
       axios
-        .get(`https://foundersnexus.onrender.com/users/${userId}`)
+        .get(`http://localhost:8000/users/${userId}`)
         .then((response) => {
           setUserInfo(response.data);
         })
@@ -39,7 +39,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
   useEffect(() => {
     if (userInfo?.currentStartup) {
       axios
-        .get(`https://foundersnexus.onrender.com/startups/${userInfo.currentStartup}`)
+        .get(`http://localhost:8000/startups/${userInfo.currentStartup}`)
         .then((response) => {
           setCurrentStartup(response.data);
           console.log('Current startup details:', response.data);

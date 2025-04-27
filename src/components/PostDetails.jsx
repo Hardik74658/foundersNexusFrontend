@@ -46,7 +46,7 @@ const PostDetails = () => {
 
   const fetchPost = useCallback(async () => {
     try {
-      const response = await axios.get(`https://foundersnexus.onrender.com/posts/${postId}`);
+      const response = await axios.get(`http://localhost:8000/posts/${postId}`);
       setPost(response.data);
     } catch (err) {
       console.error('Error fetching post:', err.response?.data || err.message);
@@ -86,7 +86,7 @@ const PostDetails = () => {
     });
 
     try {
-      const response = await axios.post(`https://foundersnexus.onrender.com/posts/${postId}/like/${userId}`);
+      const response = await axios.post(`http://localhost:8000/posts/${postId}/like/${userId}`);
       
       setToastMessage(hasUserLiked ? 'Post unliked' : 'Post liked');
       setToastType(hasUserLiked ? 'info' : 'success');
@@ -126,7 +126,7 @@ const PostDetails = () => {
       };
       
       await axios.post(
-        `https://foundersnexus.onrender.com/posts/${postId}/comments`,
+        `http://localhost:8000/posts/${postId}/comments`,
         commentData
       );
       

@@ -208,7 +208,7 @@ const AdminDashboard = () => {
       setLoading(true);
       try {
         // Fetch all users
-        const usersResponse = await axios.get('https://foundersnexus.onrender.com/users/');
+        const usersResponse = await axios.get('http://localhost:8000/users/');
         const usersData = usersResponse.data;
         setUsers(usersData);
         
@@ -236,7 +236,7 @@ const AdminDashboard = () => {
         });
 
         // Fetch startups
-        const startupsResponse = await axios.get('https://foundersnexus.onrender.com/startups/');
+        const startupsResponse = await axios.get('http://localhost:8000/startups/');
         const startupsData = startupsResponse.data;
         setStartups(startupsData);
         

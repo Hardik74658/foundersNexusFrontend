@@ -40,7 +40,7 @@ const ProfileHeader = ({ user, openPostModal  }) => {
   const handleFollowToggle = async () => {
     if (!currentUserId) return;
     try {
-      const response = await axios.get(`https://foundersnexus.onrender.com/users/${user._id}/${currentUserId}`, {
+      const response = await axios.get(`http://127.0.0.1:8000/users/${user._id}/${currentUserId}`, {
         headers: { accept: 'application/json' }
       });
       const message = response.data.message;
@@ -69,9 +69,9 @@ const ProfileHeader = ({ user, openPostModal  }) => {
     try {
       let endpoint = "";
       if (type === "followers") {
-        endpoint = `https://foundersnexus.onrender.com/users/${user._id}/followers`;
+        endpoint = `http://127.0.0.1:8000/users/${user._id}/followers`;
       } else {
-        endpoint = `https://foundersnexus.onrender.com/users/${user._id}/following`;
+        endpoint = `http://127.0.0.1:8000/users/${user._id}/following`;
       }
       console.log(endpoint);
       const res = await axios.get(endpoint, { headers: { accept: 'application/json' } });

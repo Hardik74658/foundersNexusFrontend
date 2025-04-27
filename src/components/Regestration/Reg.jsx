@@ -119,7 +119,7 @@ export default function Reg() {
       // Example API calls (uncomment and replace with actual API endpoints)
       let userId=null;
       try{
-        const userResponse = await axios.post('https://foundersnexus.onrender.com/users', userDetails);
+        const userResponse = await axios.post('http://localhost:8000/users', userDetails);
         userId = userResponse.data.user;
         console.log("User Id : ",userId)
       }
@@ -131,7 +131,7 @@ export default function Reg() {
       if (founderDetails) {
         try{
           founderDetails.userId = userId;
-          let founderResponse = await axios.post('https://foundersnexus.onrender.com/users/entrepreneurs/', founderDetails);
+          let founderResponse = await axios.post('http://localhost:8000/users/entrepreneurs/', founderDetails);
           founderId = founderResponse.data.entrepreneurId
         }
         catch(err){
@@ -143,7 +143,7 @@ export default function Reg() {
       if (investorDetails) {
         try{
           investorDetails.user_id = userId;
-          let investorResponse = await axios.post('https://foundersnexus.onrender.com/users/investors/', investorDetails);
+          let investorResponse = await axios.post('http://localhost:8000/users/investors/', investorDetails);
           investorId = investorResponse.data.investorId
         }
         catch(err){

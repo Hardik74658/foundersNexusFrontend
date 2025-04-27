@@ -19,7 +19,7 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const API_URL = 'https://foundersnexus.onrender.com/';
+const API_URL = 'http://localhost:8000';
 
 const StartupDetails = () => {
   const { id } = useParams(); // Get startup ID from URL

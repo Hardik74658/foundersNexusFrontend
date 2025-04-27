@@ -79,7 +79,7 @@ function App() {
       });
   }, [dispatch]);
 
-  axios.defaults.baseURL = 'https://foundersnexus.onrender.com/';
+  axios.defaults.baseURL = 'http://localhost:8000';
 
   return (
     <Routes>
