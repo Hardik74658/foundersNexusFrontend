@@ -143,15 +143,15 @@ export default function Users() {
     try {
       console.log("Fetching all counts...");
       const promises = [
-        axios.get('http://localhost:8000/users/founders/').catch(err => {
+        axios.get('https://foundersnexus.onrender.com/users/founders/').catch(err => {
           console.error("Error fetching founders:", err);
           return { data: [] };
         }),
-        axios.get('http://localhost:8000/users/investors/').catch(err => {
+        axios.get('https://foundersnexus.onrender.com/users/investors/').catch(err => {
           console.error("Error fetching investors:", err);
           return { data: [] };
         }),
-        axios.get('http://localhost:8000/users/').catch(err => {
+        axios.get('https://foundersnexus.onrender.com/users/').catch(err => {
           console.error("Error fetching all users:", err);
           return { data: [] };
         })

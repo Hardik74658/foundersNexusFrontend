@@ -42,7 +42,7 @@ const StartupCreation = () => {
   const [currentUserIncluded, setCurrentUserIncluded] = useState(false);
 
   // API base URL
-  const API_BASE_URL = 'http://localhost:8000';
+  const API_BASE_URL = 'https://foundersnexus.onrender.com/';
   
   // Sample founders and investors data for fallback when API fails
   const mockFounders = [

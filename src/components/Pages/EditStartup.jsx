@@ -33,7 +33,7 @@ const EditStartup = () => {
   const [hoveredPerson, setHoveredPerson] = useState(null);
 
   // API base URL
-  const API_BASE_URL = 'http://localhost:8000';
+  const API_BASE_URL = 'https://foundersnexus.onrender.com/';
   
   // Headers for API requests
   const headers = {

@@ -25,7 +25,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/users/${userId}`);
+        const response = await axios.get(`https://foundersnexus.onrender.com/users/${userId}`);
         setProfile(response.data);
       } catch (err) {
         setError('Failed to fetch profile');
@@ -46,7 +46,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/posts/user/${userId}`);
+        const response = await axios.get(`https://foundersnexus.onrender.com/posts/user/${userId}`);
         setPosts(response.data);
       } catch (err) {
         console.error('Error fetching posts:', err);
@@ -81,7 +81,7 @@ const ProfilePage = () => {
     );
 
     try {
-      const response = await axios.post(`http://localhost:8000/posts/${postId}/like/${userId}`);
+      const response = await axios.post(`https://foundersnexus.onrender.com/posts/${postId}/like/${userId}`);
       console.log(response.data.message);
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -100,7 +100,7 @@ const ProfilePage = () => {
     setIsPostModalOpen(false);
     // Optionally, refresh posts after creating a new one
     setLoadingPosts(true);
-    axios.get(`http://localhost:8000/posts/user/${userId}`).then((response) => {
+    axios.get(`https://foundersnexus.onrender.com/posts/user/${userId}`).then((response) => {
       setPosts(response.data);
       setLoadingPosts(false);
     });

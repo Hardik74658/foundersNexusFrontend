@@ -23,7 +23,7 @@ import {
   DocumentPlusIcon,
 } from '@heroicons/react/24/outline';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://foundersnexus.onrender.com/';
 
 export default function Pitch() {
   const user = useSelector((state) => state.auth.user);
