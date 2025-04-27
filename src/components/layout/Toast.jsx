@@ -1,9 +1,52 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+
+const TOAST_DURATION = 2000;
 
 const Toast = ({ message, show, onUndo, onClose }) => {
-  if (!show) return null;
+  const [visible, setVisible] = useState(false);
+  const [progress, setProgress] = useState(100);
+  const progressRef = useRef();
+
+  useEffect(() => {
+    if (show) {
+      setVisible(true);
+      setProgress(100);
+      const start = Date.now();
+      progressRef.current = setInterval(() => {
+        const elapsed = Date.now() - start;
+        setProgress(Math.max(0, 100 - (elapsed / TOAST_DURATION) * 100));
+      }, 30);
+
+      const timer = setTimeout(() => {
+        setVisible(false);
+        setTimeout(() => {
+          onClose && onClose();
+        }, 300); // match exit animation
+      }, TOAST_DURATION);
+
+      return () => {
+        clearTimeout(timer);
+        clearInterval(progressRef.current);
+      };
+    } else {
+      setVisible(false);
+      setProgress(100);
+      clearInterval(progressRef.current);
+    }
+  }, [show, onClose]);
+
+  if (!show && !visible) return null;
+
   return (
-    <div className="flex items-center w-full max-w-sm py-5 px-6 text-gray-600 bg-white rounded-xl border border-gray-200 shadow-sm" role="alert">
+    <div
+      className={`
+        flex items-center w-full max-w-sm py-5 px-6 text-gray-600 bg-white rounded-xl border border-gray-200 shadow-sm
+        transition-all duration-300
+        ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}
+      `}
+      style={{ position: 'relative' }}
+      role="alert"
+    >
       <div className="inline-flex space-x-3 items-center">
         <span className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
           <svg className="w-5 h-5 text-indigo-600" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,6 +66,11 @@ const Toast = ({ message, show, onUndo, onClose }) => {
           </svg>
         </button>
       </div>
+      {/* Progress Bar */}
+      <div
+        className="absolute left-0 bottom-0 h-1 bg-indigo-500 rounded-b-xl transition-all duration-75"
+        style={{ width: `${progress}%` }}
+      />
     </div>
   );
 };

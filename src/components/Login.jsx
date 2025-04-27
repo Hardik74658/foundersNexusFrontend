@@ -6,6 +6,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../services/auth';
 import { useDispatch } from 'react-redux';
 import { login as sliceLogin } from '../redux/slices/authSlice';
+import Toast from './layout/Toast.jsx';
+import Loader from './layout/Loader.jsx';
 
 const Login = () => {
   const {
@@ -19,6 +21,7 @@ const Login = () => {
   
   const [error, setError] = useState('');
   const [loader, setLoader] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
   
   const onSubmit = async (data) => {
     setLoader(true);
@@ -32,7 +35,7 @@ const Login = () => {
         localStorage.setItem('role', res.data.user.role.name);
         dispatch(sliceLogin(res.data));
         setLoader(false);
-        alert('Login successful!');
+        setToastMessage('Login successful!');
         navigate('/landing_page');
       } else {
         throw new Error(res?.data?.detail || 'Unexpected error occurred');
@@ -46,6 +49,18 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      {loader && (
+        <div className="absolute inset-0 flex justify-center items-center bg-black/30 z-50">
+          <Loader />
+        </div>
+      )}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          show={true}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       <div className="flex flex-col md:flex-row bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full">
         {/* Left Side: Image with overlay text */}
         <div className="relative md:w-1/2 h-80 md:h-auto">
@@ -73,7 +88,7 @@ const Login = () => {
                 {...register('email', {
                   required: 'Email is required',
                   pattern: {
-                    value: /^\S+@\S+\.\S+$/,
+                    value: /^\S+@\S+$/,
                     message: 'Invalid email address',
                   },
                 })}

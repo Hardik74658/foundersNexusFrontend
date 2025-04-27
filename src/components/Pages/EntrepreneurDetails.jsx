@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import signup from '../assets/signup.jpg';
 import { useForm, Controller } from 'react-hook-form';
 import Box from '@mui/material/Box';
@@ -7,6 +7,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import RoleGroupRadio from './RoleGroupForm';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Toast from '../layout/Toast';
+import Loader from '../layout/Loader';
 
 export const EntrepreneurDetails = () => {
   const {
@@ -19,19 +21,31 @@ export const EntrepreneurDetails = () => {
    const navigate = useNavigate();
  
    const password = watch('password', '');
+   const [loading, setLoading] = useState(false);
+   const [toast, setToast] = useState({ show: false, message: '' });
  
    const onSubmit = async (data) => {
+     setLoading(true);
      const {confPassword, ...cleanedData} = data;
      console.log('Signup data:', cleanedData);
-     const [role,roleId] = cleanedData.roleId.split('/');
-     cleanedData.roleId=roleId;
-     const res = await axios.post('/users',cleanedData);
-     console.log(res)
-     if (res.status === 201) {
-       alert("Signup success");
-       navigate(`/user/${role}`) // check in app.j slogin...
-     } else {
-       alert("Signup failed");
+     try {
+       const [role,roleId] = cleanedData.roleId.split('/');
+       cleanedData.roleId=roleId;
+       const res = await axios.post('/users',cleanedData);
+       console.log(res)
+       if (res.status === 201) {
+         setToast({ show: true, message: "Signup success" });
+         setTimeout(() => {
+           setToast({ show: false, message: "" });
+           navigate(`/user/${role}`);
+         }, 2000);
+       } else {
+         setToast({ show: true, message: "Signup failed" });
+       }
+     } catch (err) {
+       setToast({ show: true, message: "Signup failed" });
+     } finally {
+       setLoading(false);
      }
    };
  
@@ -46,6 +60,21 @@ export const EntrepreneurDetails = () => {
  
    return (
      <ThemeProvider theme={theme}>
+       {/* Toast Positioning */}
+       <div className="fixed top-5 right-5 z-50">
+         <Toast
+           show={toast.show}
+           message={toast.message}
+           onUndo={() => setToast({ ...toast, show: false })}
+           onClose={() => setToast({ ...toast, show: false })}
+         />
+       </div>
+       {/* Loader Centered */}
+       {loading && (
+         <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+           <Loader />
+         </div>
+       )}
        <div className="md:px-16 py-8 h-fit">
          <div className="flex flex-col justify-center items-center md:text-xl text-blue-600">
            <h1>Just Few More information & You're In!!</h1>

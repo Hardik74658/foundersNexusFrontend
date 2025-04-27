@@ -12,6 +12,8 @@ import {
   ChevronDoubleRightIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline';
+import Loader from '../layout/Loader';
+import Toast from '../layout/Toast';
 
 /**
  * Reusable card component for displaying startup info
@@ -142,6 +144,7 @@ export const StartUps = () => {
   const [filteredStartups, setFilteredStartups] = useState([]);
   const [industryFilter, setIndustryFilter] = useState('');
   const [fundingStageFilter, setFundingStageFilter] = useState('');
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   useEffect(() => {
     const fetchStartups = async () => {
@@ -154,6 +157,7 @@ export const StartUps = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error fetching startups:', error);
+        setToast({ show: true, message: 'Error fetching startups' });
         setLoading(false);
       }
     };
@@ -202,117 +206,129 @@ export const StartUps = () => {
   const uniqueIndustries = [...new Set(startups.map(startup => startup.industry).filter(Boolean))];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 font-sans">
-      <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
-          <div className="flex items-center mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md mr-3">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 text-transparent bg-clip-text">Founders Nexus</h1>
-          </div>
-          
-          <h2 className="text-3xl font-bold text-gray-800 mb-4">Explore Startups</h2>
-          <p className="text-gray-600 max-w-2xl">
-            Discover innovative startups across different industries. Connect with founders and explore investment opportunities.
-          </p>
-        </motion.div>
-        
-        <div className="flex flex-wrap gap-4 mb-8">
-          <div className="relative grow md:grow-0 md:w-64">
-            <input
-              type="text"
-              placeholder="Search startups..."
-              className="w-full px-4 py-3 pr-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent shadow-sm"
-              value={searchQuery}
-              onChange={handleSearch}
-            />
-            <HiSearch className="absolute right-3 top-3.5 text-gray-400" size={20} />
-          </div>
-          
-          <div className="relative grow md:grow-0">
-            <select
-              className="w-full appearance-none border rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white shadow-sm"
-              value={industryFilter}
-              onChange={(e) => setIndustryFilter(e.target.value)}
-            >
-              <option value="">All Industries</option>
-              {uniqueIndustries.map((industry, index) => (
-                <option key={index} value={industry}>{industry}</option>
-              ))}
-            </select>
-            <FiChevronDown className="absolute right-3 top-3.5 text-gray-400" />
-          </div>
-          
-          <div className="relative grow md:grow-0">
-            <select
-              className="w-full appearance-none border rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white shadow-sm"
-              value={fundingStageFilter}
-              onChange={(e) => setFundingStageFilter(e.target.value)}
-            >
-              <option value="">All Funding Stages</option>
-              <option value="pre-seed">Pre-Seed</option>
-              <option value="seed">Seed</option>
-              <option value="series-a">Series A</option>
-              <option value="series-b">Series B</option>
-            </select>
-            <FiChevronDown className="absolute right-3 top-3.5 text-gray-400" />
-          </div>
-          
-          <button 
-            onClick={applyFilters}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-3 rounded-xl font-medium transition shadow-md flex items-center space-x-2"
-          >
-            <span>Apply Filters</span>
-            <ChevronDoubleRightIcon className="h-4 w-4" />
-          </button>
+    <>
+      {/* Toast Positioning */}
+      <div className="fixed top-5 right-5 z-50">
+        <Toast
+          show={toast.show}
+          message={toast.message}
+          onUndo={() => setToast({ ...toast, show: false })}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      </div>
+      {/* Loader Centered */}
+      {loading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+          <Loader />
         </div>
-        
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
-            <p className="text-lg text-gray-600">Loading startups...</p>
-          </div>
-        ) : filteredStartups.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStartups.map((startup) => (
-              <StartupCard 
-                key={startup._id}
-                id={startup._id}
-                name={startup.startup_name}
-                logoUrl={startup.logo_url}
-                industry={startup.industry}
-                marketSize={startup.market_size}
-                founders={startup.founders}
-                description={startup.description}
-                iconBg={`bg-${getRandomColor()}-${getRandomShade()}`}
-              />
-            ))}
-          </div>
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="bg-white rounded-3xl p-12 shadow-lg text-center"
+      )}
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 font-sans">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
           >
-            <div className="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
-              <PresentationChartBarIcon className="h-10 w-10 text-indigo-600" />
+            <div className="flex items-center mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 text-transparent bg-clip-text">Founders Nexus</h1>
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-3">No Startups Found</h3>
-            <p className="text-gray-600 mb-8 max-w-md mx-auto">
-              We couldn't find any startups matching your search criteria. Try adjusting your filters or search term.
+            
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Explore Startups</h2>
+            <p className="text-gray-600 max-w-2xl">
+              Discover innovative startups across different industries. Connect with founders and explore investment opportunities.
             </p>
           </motion.div>
-        )}
+          
+          <div className="flex flex-wrap gap-4 mb-8">
+            <div className="relative grow md:grow-0 md:w-64">
+              <input
+                type="text"
+                placeholder="Search startups..."
+                className="w-full px-4 py-3 pr-10 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent shadow-sm"
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+              <HiSearch className="absolute right-3 top-3.5 text-gray-400" size={20} />
+            </div>
+            
+            <div className="relative grow md:grow-0">
+              <select
+                className="w-full appearance-none border rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white shadow-sm"
+                value={industryFilter}
+                onChange={(e) => setIndustryFilter(e.target.value)}
+              >
+                <option value="">All Industries</option>
+                {uniqueIndustries.map((industry, index) => (
+                  <option key={index} value={industry}>{industry}</option>
+                ))}
+              </select>
+              <FiChevronDown className="absolute right-3 top-3.5 text-gray-400" />
+            </div>
+            
+            <div className="relative grow md:grow-0">
+              <select
+                className="w-full appearance-none border rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent bg-white shadow-sm"
+                value={fundingStageFilter}
+                onChange={(e) => setFundingStageFilter(e.target.value)}
+              >
+                <option value="">All Funding Stages</option>
+                <option value="pre-seed">Pre-Seed</option>
+                <option value="seed">Seed</option>
+                <option value="series-a">Series A</option>
+                <option value="series-b">Series B</option>
+              </select>
+              <FiChevronDown className="absolute right-3 top-3.5 text-gray-400" />
+            </div>
+            
+            <button 
+              onClick={applyFilters}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-3 rounded-xl font-medium transition shadow-md flex items-center space-x-2"
+            >
+              <span>Apply Filters</span>
+              <ChevronDoubleRightIcon className="h-4 w-4" />
+            </button>
+          </div>
+          
+          {!loading && filteredStartups.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredStartups.map((startup) => (
+                <StartupCard 
+                  key={startup._id}
+                  id={startup._id}
+                  name={startup.startup_name}
+                  logoUrl={startup.logo_url}
+                  industry={startup.industry}
+                  marketSize={startup.market_size}
+                  founders={startup.founders}
+                  description={startup.description}
+                  iconBg={`bg-${getRandomColor()}-${getRandomShade()}`}
+                />
+              ))}
+            </div>
+          ) : !loading ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white rounded-3xl p-12 shadow-lg text-center"
+            >
+              <div className="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                <PresentationChartBarIcon className="h-10 w-10 text-indigo-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">No Startups Found</h3>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                We couldn't find any startups matching your search criteria. Try adjusting your filters or search term.
+              </p>
+            </motion.div>
+          ) : null}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

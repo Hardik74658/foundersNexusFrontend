@@ -6,6 +6,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import Loader from '../layout/Loader';
 import AsyncSelect from 'react-select/async';
 import { useSelector } from 'react-redux';
+import Toast from '../layout/Toast';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -31,6 +32,7 @@ const EditStartup = () => {
   const [logoFile, setLogoFile] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const [hoveredPerson, setHoveredPerson] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '' });
 
   // API base URL
   const API_BASE_URL = 'http://localhost:8000';
@@ -330,7 +332,7 @@ const EditStartup = () => {
     // Don't remove if this is a founder
     const entryToRemove = formData.equity_split[index];
     if (entryToRemove.type === 'Founder' && formData.founders.includes(entryToRemove.userId)) {
-      alert("You cannot remove a founder's equity. Please adjust the percentage instead.");
+      setToast({ show: true, message: "You cannot remove a founder's equity. Please adjust the percentage instead." });
       return;
     }
     
@@ -387,7 +389,7 @@ const EditStartup = () => {
     try {
       // Validate equity split
       if (Math.abs(totalEquity - 100) > 0.01) {
-        alert('Total equity percentage must equal 100%');
+        setToast({ show: true, message: 'Total equity percentage must equal 100%' });
         setIsSaving(false);
         return;
       }
@@ -462,7 +464,7 @@ const EditStartup = () => {
 
       // If nothing changed, do nothing
       if (!hasAnyChange) {
-        alert('No changes to save');
+        setToast({ show: true, message: 'No changes to save' });
         setIsSaving(false);
         return;
       }
@@ -481,8 +483,10 @@ const EditStartup = () => {
           error.response &&
           error.response.status === 200
         ) {
-          alert('Startup updated successfully!');
-          navigate(`/startup/${id}`);
+          setToast({ show: true, message: 'Startup updated successfully!' });
+          setTimeout(() => {
+            navigate(`/startup/${id}`);
+          }, 2000);
           setIsSaving(false);
           return;
         }
@@ -490,8 +494,10 @@ const EditStartup = () => {
       }
 
       if (response && response.status === 200) {
-        alert('Startup updated successfully!');
-        navigate(`/startup/${id}`);
+        setToast({ show: true, message: 'Startup updated successfully!' });
+        setTimeout(() => {
+          navigate(`/startup/${id}`);
+        }, 2000);
       } else {
         throw new Error('Failed to update startup');
       }
@@ -506,8 +512,10 @@ const EditStartup = () => {
           (typeof error.response.data?.detail === 'string' &&
             error.response.data.detail.includes('Error updating startup: 500: Error updating startup: 400:'))
         ) {
-          alert('Startup updated (with backend warning).');
-          navigate(`/startup/${id}`);
+          setToast({ show: true, message: 'Startup updated (with backend warning).' });
+          setTimeout(() => {
+            navigate(`/startup/${id}`);
+          }, 2000);
           setIsSaving(false);
           return;
         }
@@ -516,7 +524,7 @@ const EditStartup = () => {
       } else {
         errorMessage += `: ${error.message}`;
       }
-      alert(errorMessage);
+      setToast({ show: true, message: errorMessage });
     } finally {
       setIsSaving(false);
     }
@@ -524,7 +532,11 @@ const EditStartup = () => {
 
   // Loading and error states
   if (loading || isSaving) {
-    return <Loader />;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+        <Loader />
+      </div>
+    );
   }
 
   if (isAuthorized === false) {
@@ -551,6 +563,15 @@ const EditStartup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 p-4">
+      {/* Toast Positioning */}
+      <div className="fixed top-5 right-5 z-50">
+        <Toast
+          show={toast.show}
+          message={toast.message}
+          onUndo={() => setToast({ ...toast, show: false })}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      </div>
       <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-sm p-6">
         <form onSubmit={handleSubmit}>
           {/* Navigation */}

@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeftIcon, ChatBubbleBottomCenterTextIcon, UserCircleIcon } from '@heroicons/react/24/outline';
+import Loader from './layout/Loader.jsx';
+import Toast from './layout/Toast.jsx';
 
 function Chat() {
   const { otherUserId } = useParams();
@@ -14,6 +16,7 @@ function Chat() {
   const [otherUser, setOtherUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [toastMessage, setToastMessage] = useState(null);
   const [userList, setUserList] = useState([]);
   const [activeUserId, setActiveUserId] = useState(null);
 
@@ -53,6 +56,8 @@ function Chat() {
         }
       } catch {
         setError('Failed to load current user.');
+      } finally {
+        setLoading(false);
       }
     }
     fetchCurrentUser();
@@ -72,6 +77,8 @@ function Chat() {
         if (isMounted) setOtherUser(res.data);
       } catch {
         setError('Failed to load other user.');
+      } finally {
+        setLoading(false);
       }
     }
     fetchOtherUser();
@@ -146,35 +153,25 @@ function Chat() {
 
   // --- UI ---
   if (!otherUserId) {
-    if (!currentUser) return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full bg-indigo-200 mb-3"></div>
-          <div className="h-2 w-24 bg-indigo-200 rounded mb-2"></div>
-          <div className="h-2 w-16 bg-indigo-100 rounded"></div>
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader />
         </div>
-      </div>
-    );
+      );
+    }
     
-    if (error) return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-3xl shadow-lg max-w-md w-full text-center">
-          <div className="bg-red-100 mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Something went wrong</h3>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button 
-            onClick={handleGoBack}
-            className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition-all"
-          >
-            Go back
-          </button>
+    if (error) {
+      return (
+        <div>
+          <Toast
+            message={error}
+            show={true}
+            onClose={() => setError('')}
+          />
         </div>
-      </div>
-    );
+      );
+    }
     
     if (userList.length === 0) return (
       <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
@@ -280,36 +277,20 @@ function Chat() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full border-4 border-indigo-200 border-opacity-50"></div>
-            <div className="absolute inset-0 w-16 h-16 rounded-full border-t-4 border-indigo-600 animate-spin"></div>
-          </div>
-          <p className="mt-4 text-indigo-600 font-medium">Loading conversation...</p>
-        </div>
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
       </div>
     );
   }
   
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-3xl shadow-lg max-w-md w-full text-center">
-          <div className="bg-red-100 mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">Something went wrong</h3>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <button 
-            onClick={() => navigate('/chat')}
-            className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition-all"
-          >
-            Go back to chats
-          </button>
-        </div>
+      <div>
+        <Toast
+          message={error}
+          show={true}
+          onClose={() => setError('')}
+        />
       </div>
     );
   }

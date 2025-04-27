@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Loader from '../layout/Loader'; // Adjust the path as needed
+import Toast from '../layout/Toast'; // Import Toast component
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const EditProfile = () => {
   const [originalRoleDetails, setOriginalRoleDetails] = useState(null);
   const [hasUserDetailsChanged, setHasUserDetailsChanged] = useState(false);
   const [hasRoleDetailsChanged, setHasRoleDetailsChanged] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   // Common headers for API requests
   const headers = {
@@ -320,6 +322,7 @@ const EditProfile = () => {
           console.log('User details updated successfully');
         } catch (error) {
           console.error('Error updating user details:', error);
+          setToast({ show: true, message: 'Failed to update user details', type: 'error' });
           throw new Error('Failed to update user details');
         }
       }
@@ -362,19 +365,22 @@ const EditProfile = () => {
           }
         } catch (error) {
           console.error('Error updating role details:', error);
+          setToast({ show: true, message: 'Failed to update role details', type: 'error' });
           throw new Error('Failed to update role details');
         }
       }
 
       if (isSuccess) {
-        alert('Profile updated successfully!');
-        navigate(`/user/${user._id}`);
+        setToast({ show: true, message: 'Profile updated successfully!', type: 'success' });
+        setTimeout(() => {
+          navigate(`/user/${user._id}`);
+        }, 1200);
       } else {
-        alert('No changes to save');
+        setToast({ show: true, message: 'No changes to save', type: 'info' });
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert(`Failed to update profile: ${error.message}`);
+      setToast({ show: true, message: `Failed to update profile: ${error.message}`, type: 'error' });
     } finally {
       setIsSaving(false);
     }
@@ -382,7 +388,11 @@ const EditProfile = () => {
 
   // Loading and error states
   if (loading || isSaving) {
-    return <Loader />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {
@@ -402,424 +412,433 @@ const EditProfile = () => {
   }
 
   return (
-    <section className="relative pt-24 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 bg-gray-50">
-      {/* Cover Image */}
-      <div
-        className="w-full absolute top-0 left-0 z-0 h-48 sm:h-56 lg:h-60 cursor-pointer group"
-        onMouseEnter={() => setImageHover((prev) => ({ ...prev, cover: true }))}
-        onMouseLeave={() => setImageHover((prev) => ({ ...prev, cover: false }))}
-      >
-        <img
-          src={formData.coverImage || fallbackCover}
-          alt="cover"
-          className="w-full h-full object-cover"
-        />
-        <label
-          className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
-            imageHover.cover ? 'bg-opacity-50' : 'bg-opacity-0'
-          }`}
+    <>
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        position="top-right"
+        onClose={() => setToast({ ...toast, show: false })}
+      />
+      <section className="relative pt-24 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 bg-gray-50">
+        {/* Cover Image */}
+        <div
+          className="w-full absolute top-0 left-0 z-0 h-48 sm:h-56 lg:h-60 cursor-pointer group"
+          onMouseEnter={() => setImageHover((prev) => ({ ...prev, cover: true }))}
+          onMouseLeave={() => setImageHover((prev) => ({ ...prev, cover: false }))}
         >
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleImageUpload(e, 'cover')}
-            className="hidden"
+          <img
+            src={formData.coverImage || fallbackCover}
+            alt="cover"
+            className="w-full h-full object-cover"
           />
-          <span
-            className={`text-white font-medium transition-opacity duration-300 ${
-              imageHover.cover ? 'opacity-100' : 'opacity-0'
+          <label
+            className={`absolute inset-0 flex items-center justify-center bg-black/40 transition-opacity duration-300 ${
+              imageHover.cover ? 'bg-opacity-50' : 'bg-opacity-0'
             }`}
           >
-            Click to Upload Cover Image
-          </span>
-        </label>
-      </div>
-
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Profile Header */}
-        <div className="rounded-xl pb-8 m-12">
-          {/* Profile Picture */}
-          <div className="flex items-center justify-center mb-4 sm:mb-6 -mt-16">
-            <div
-              className="relative cursor-pointer group"
-              onMouseEnter={() => setImageHover((prev) => ({ ...prev, profile: true }))}
-              onMouseLeave={() => setImageHover((prev) => ({ ...prev, profile: false }))}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageUpload(e, 'cover')}
+              className="hidden"
+            />
+            <span
+              className={`text-white font-medium transition-opacity duration-300 ${
+                imageHover.cover ? 'opacity-100' : 'opacity-0'
+              }`}
             >
-              <img
-                src={formData.profilePicture || fallbackAvatar}
-                alt="profile"
-                className="border-4 border-solid w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 border-white rounded-full object-cover"
-              />
-              <label
-                className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity duration-300 ${
-                  imageHover.profile ? 'bg-opacity-50' : 'bg-opacity-0'
-                }`}
+              Click to Upload Cover Image
+            </span>
+          </label>
+        </div>
+
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Profile Header */}
+          <div className="rounded-xl pb-8 m-12">
+            {/* Profile Picture */}
+            <div className="flex items-center justify-center mb-4 sm:mb-6 -mt-16">
+              <div
+                className="relative cursor-pointer group"
+                onMouseEnter={() => setImageHover((prev) => ({ ...prev, profile: true }))}
+                onMouseLeave={() => setImageHover((prev) => ({ ...prev, profile: false }))}
               >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, 'profile')}
-                  className="hidden"
+                <img
+                  src={formData.profilePicture || fallbackAvatar}
+                  alt="profile"
+                  className="border-4 border-solid w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 border-white rounded-full object-cover"
                 />
-                <span
-                  className={`text-white text-sm text-center font-medium transition-opacity duration-300 ${
-                    imageHover.profile ? 'opacity-100' : 'opacity-0'
+                <label
+                  className={`absolute inset-0 flex items-center justify-center bg-black/40 rounded-full transition-opacity duration-300 ${
+                    imageHover.profile ? 'bg-opacity-50' : 'bg-opacity-0'
                   }`}
                 >
-                  Update Profile Picture
-                </span>
-              </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, 'profile')}
+                    className="hidden"
+                  />
+                  <span
+                    className={`text-white text-sm text-center font-medium transition-opacity duration-300 ${
+                      imageHover.profile ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  >
+                    Update Profile Picture
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Name and Bio */}
+            <div className="text-center mb-6 px-4">
+              <input
+                type="text"
+                value={formData.fullName}
+                onChange={(e) => handleInputChange(e, 'fullName')}
+                className="text-2xl sm:text-3xl lg:text-3xl font-bold text-gray-900 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none"
+                placeholder="Your Name"
+              />
+              <textarea
+                value={formData.bio}
+                onChange={(e) => handleInputChange(e, 'bio')}
+                className="mt-2 w-full text-sm sm:text-base lg:text-base text-gray-500 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none resize-none"
+                placeholder="Write something about yourself..."
+                rows="2"
+              />
             </div>
           </div>
 
-          {/* Name and Bio */}
-          <div className="text-center mb-6 px-4">
-            <input
-              type="text"
-              value={formData.fullName}
-              onChange={(e) => handleInputChange(e, 'fullName')}
-              className="text-2xl sm:text-3xl lg:text-3xl font-bold text-gray-900 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none"
-              placeholder="Your Name"
-            />
-            <textarea
-              value={formData.bio}
-              onChange={(e) => handleInputChange(e, 'bio')}
-              className="mt-2 w-full text-sm sm:text-base lg:text-base text-gray-500 text-center bg-transparent border-b border-transparent hover:border-gray-300 focus:border-indigo-600 focus:outline-none resize-none"
-              placeholder="Write something about yourself..."
-              rows="2"
-            />
-          </div>
-        </div>
+          {/* Role-Specific Details */}
+          <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
+            <div className="border-b border-gray-200 pb-4 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {formData.role === 'founder' ? 'Founder Details' : 'Investor Details'}
+              </h2>
+            </div>
 
-        {/* Role-Specific Details */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mt-8">
-          <div className="border-b border-gray-200 pb-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              {formData.role === 'founder' ? 'Founder Details' : 'Investor Details'}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {formData.role === 'founder' ? (
-              <div className="space-y-6 col-span-2">
-                {/* Educational Background */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Educational Background</label>
-                  {formData.founderDetails.educationalBackground.map((edu, index) => (
-                    <div key={index} className="grid grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        value={edu.degree}
-                        onChange={(e) =>
-                          updateListItem('educationalBackground', index, { ...edu, degree: e.target.value }, 'founderDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Degree"
-                      />
-                      <input
-                        type="text"
-                        value={edu.institution}
-                        onChange={(e) =>
-                          updateListItem('educationalBackground', index, { ...edu, institution: e.target.value }, 'founderDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Institution"
-                      />
-                      <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {formData.role === 'founder' ? (
+                <div className="space-y-6 col-span-2">
+                  {/* Educational Background */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Educational Background</label>
+                    {formData.founderDetails.educationalBackground.map((edu, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2">
                         <input
                           type="text"
-                          value={edu.year}
+                          value={edu.degree}
                           onChange={(e) =>
-                            updateListItem('educationalBackground', index, { ...edu, year: e.target.value }, 'founderDetails')
+                            updateListItem('educationalBackground', index, { ...edu, degree: e.target.value }, 'founderDetails')
                           }
-                          className="flex-1 p-2 border rounded"
-                          placeholder="Year"
+                          className="p-2 border rounded"
+                          placeholder="Degree"
                         />
-                        <button
-                          onClick={() => removeListItem('educationalBackground', index, 'founderDetails')}
-                          className="px-3 py-1 text-red-500"
-                        >
-                          X
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('educationalBackground', 'founderDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Education
-                  </button>
-                </div>
-
-                {/* Skills */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Skills</label>
-                  {formData.founderDetails.skills.map((skill, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={skill}
-                        onChange={(e) => updateListItem('skills', index, e.target.value, 'founderDetails')}
-                        className="flex-1 p-2 border rounded"
-                        placeholder="Enter skill"
-                      />
-                      <button
-                        onClick={() => removeListItem('skills', index, 'founderDetails')}
-                        className="px-3 py-1 text-red-500"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('skills', 'founderDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Skill
-                  </button>
-                </div>
-
-                {/* Work Experience */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Work Experience</label>
-                  {formData.founderDetails.workExperience.map((exp, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        value={exp.company}
-                        onChange={(e) =>
-                          updateListItem('workExperience', index, { ...exp, company: e.target.value }, 'founderDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Company"
-                      />
-                      <input
-                        type="text"
-                        value={exp.role}
-                        onChange={(e) =>
-                          updateListItem('workExperience', index, { ...exp, role: e.target.value }, 'founderDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Role"
-                      />
-                      <input
-                        type="text"
-                        value={exp.duration}
-                        onChange={(e) =>
-                          updateListItem('workExperience', index, { ...exp, duration: e.target.value }, 'founderDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Duration"
-                      />
-                      <div className="flex gap-2">
                         <input
                           type="text"
-                          value={exp.description}
+                          value={edu.institution}
                           onChange={(e) =>
-                            updateListItem('workExperience', index, { ...exp, description: e.target.value }, 'founderDetails')
+                            updateListItem('educationalBackground', index, { ...edu, institution: e.target.value }, 'founderDetails')
                           }
-                          className="flex-1 p-2 border rounded"
-                          placeholder="Description"
+                          className="p-2 border rounded"
+                          placeholder="Institution"
                         />
-                        <button
-                          onClick={() => removeListItem('workExperience', index, 'founderDetails')}
-                          className="px-3 py-1 text-red-500"
-                        >
-                          X
-                        </button>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={edu.year}
+                            onChange={(e) =>
+                              updateListItem('educationalBackground', index, { ...edu, year: e.target.value }, 'founderDetails')
+                            }
+                            className="flex-1 p-2 border rounded"
+                            placeholder="Year"
+                          />
+                          <button
+                            onClick={() => removeListItem('educationalBackground', index, 'founderDetails')}
+                            className="px-3 py-1 text-red-500"
+                          >
+                            X
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('workExperience', 'founderDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Experience
-                  </button>
-                </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('educationalBackground', 'founderDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Education
+                    </button>
+                  </div>
 
-                {/* Certifications */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Certifications</label>
-                  {formData.founderDetails.certifications.map((cert, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={cert}
-                        onChange={(e) => updateListItem('certifications', index, e.target.value, 'founderDetails')}
-                        className="flex-1 p-2 border rounded"
-                        placeholder="Enter certification"
-                      />
-                      <button
-                        onClick={() => removeListItem('certifications', index, 'founderDetails')}
-                        className="px-3 py-1 text-red-500"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('certifications', 'founderDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Certification
-                  </button>
-                </div>
-
-                {/* Portfolio Links */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Portfolio Links</label>
-                  {formData.founderDetails.portfolioLinks.map((link, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="url"
-                        value={link}
-                        onChange={(e) => updateListItem('portfolioLinks', index, e.target.value, 'founderDetails')}
-                        className="flex-1 p-2 border rounded"
-                        placeholder="Enter portfolio link"
-                      />
-                      <button
-                        onClick={() => removeListItem('portfolioLinks', index, 'founderDetails')}
-                        className="px-3 py-1 text-red-500"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('portfolioLinks', 'founderDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Portfolio Link
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-6 col-span-2">
-                {/* Investor Type */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Investor Type</label>
-                  <select
-                    value={formData.investorDetails.investor_type}
-                    onChange={(e) => handleInputChange(e, 'investor_type', 'investorDetails')}
-                    className="w-full p-2 border rounded"
-                  >
-                    <option value="">Select Type</option>
-                    <option value="Angel">Angel</option>
-                    <option value="VC">VC</option>
-                    <option value="Corporate">Corporate</option>
-                    <option value="Government">Government</option>
-                  </select>
-                </div>
-
-                {/* Funds Available */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Funds Available</label>
-                  <input
-                    type="number"
-                    value={formData.investorDetails.funds_available}
-                    onChange={(e) => handleInputChange(e, 'funds_available', 'investorDetails')}
-                    className="w-full p-2 border rounded"
-                    placeholder="Enter available funds"
-                  />
-                </div>
-
-                {/* Investment Interests */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Investment Interests</label>
-                  {formData.investorDetails.investment_interests.map((interest, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={interest}
-                        onChange={(e) => updateListItem('investment_interests', index, e.target.value, 'investorDetails')}
-                        className="flex-1 p-2 border rounded"
-                        placeholder="Enter investment interest"
-                      />
-                      <button
-                        onClick={() => removeListItem('investment_interests', index, 'investorDetails')}
-                        className="px-3 py-1 text-red-500"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('investment_interests', 'investorDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Interest
-                  </button>
-                </div>
-
-                {/* Previous Investments */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Previous Investments</label>
-                  {formData.investorDetails.previous_investments.map((investment, index) => (
-                    <div key={index} className="grid grid-cols-3 gap-2 mt-2">
-                      <input
-                        type="text"
-                        value={investment.startupName || ''}
-                        onChange={(e) =>
-                          updateListItem('previous_investments', index, { ...investment, startupName: e.target.value }, 'investorDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Startup Name"
-                      />
-                      <input
-                        type="number"
-                        value={investment.amount || ''}
-                        onChange={(e) =>
-                          updateListItem('previous_investments', index, { ...investment, amount: e.target.value }, 'investorDetails')
-                        }
-                        className="p-2 border rounded"
-                        placeholder="Amount"
-                      />
-                      <div className="flex gap-2">
+                  {/* Skills */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Skills</label>
+                    {formData.founderDetails.skills.map((skill, index) => (
+                      <div key={index} className="flex gap-2">
                         <input
-                          type="date"
-                          value={investment.date || ''}
-                          onChange={(e) =>
-                            updateListItem('previous_investments', index, { ...investment, date: e.target.value }, 'investorDetails')
-                          }
+                          type="text"
+                          value={skill}
+                          onChange={(e) => updateListItem('skills', index, e.target.value, 'founderDetails')}
                           className="flex-1 p-2 border rounded"
+                          placeholder="Enter skill"
                         />
                         <button
-                          onClick={() => removeListItem('previous_investments', index, 'investorDetails')}
+                          onClick={() => removeListItem('skills', index, 'founderDetails')}
                           className="px-3 py-1 text-red-500"
                         >
-                          X
+                          Remove
                         </button>
                       </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => addListItem('previous_investments', 'investorDetails')}
-                    className="mt-2 text-indigo-600"
-                  >
-                    + Add Investment
-                  </button>
+                    ))}
+                    <button
+                      onClick={() => addListItem('skills', 'founderDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Skill
+                    </button>
+                  </div>
+
+                  {/* Work Experience */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Work Experience</label>
+                    {formData.founderDetails.workExperience.map((exp, index) => (
+                      <div key={index} className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={exp.company}
+                          onChange={(e) =>
+                            updateListItem('workExperience', index, { ...exp, company: e.target.value }, 'founderDetails')
+                          }
+                          className="p-2 border rounded"
+                          placeholder="Company"
+                        />
+                        <input
+                          type="text"
+                          value={exp.role}
+                          onChange={(e) =>
+                            updateListItem('workExperience', index, { ...exp, role: e.target.value }, 'founderDetails')
+                          }
+                          className="p-2 border rounded"
+                          placeholder="Role"
+                        />
+                        <input
+                          type="text"
+                          value={exp.duration}
+                          onChange={(e) =>
+                            updateListItem('workExperience', index, { ...exp, duration: e.target.value }, 'founderDetails')
+                          }
+                          className="p-2 border rounded"
+                          placeholder="Duration"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={exp.description}
+                            onChange={(e) =>
+                              updateListItem('workExperience', index, { ...exp, description: e.target.value }, 'founderDetails')
+                            }
+                            className="flex-1 p-2 border rounded"
+                            placeholder="Description"
+                          />
+                          <button
+                            onClick={() => removeListItem('workExperience', index, 'founderDetails')}
+                            className="px-3 py-1 text-red-500"
+                          >
+                            X
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('workExperience', 'founderDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Experience
+                    </button>
+                  </div>
+
+                  {/* Certifications */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Certifications</label>
+                    {formData.founderDetails.certifications.map((cert, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={cert}
+                          onChange={(e) => updateListItem('certifications', index, e.target.value, 'founderDetails')}
+                          className="flex-1 p-2 border rounded"
+                          placeholder="Enter certification"
+                        />
+                        <button
+                          onClick={() => removeListItem('certifications', index, 'founderDetails')}
+                          className="px-3 py-1 text-red-500"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('certifications', 'founderDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Certification
+                    </button>
+                  </div>
+
+                  {/* Portfolio Links */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Portfolio Links</label>
+                    {formData.founderDetails.portfolioLinks.map((link, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="url"
+                          value={link}
+                          onChange={(e) => updateListItem('portfolioLinks', index, e.target.value, 'founderDetails')}
+                          className="flex-1 p-2 border rounded"
+                          placeholder="Enter portfolio link"
+                        />
+                        <button
+                          onClick={() => removeListItem('portfolioLinks', index, 'founderDetails')}
+                          className="px-3 py-1 text-red-500"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('portfolioLinks', 'founderDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Portfolio Link
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-6 col-span-2">
+                  {/* Investor Type */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Investor Type</label>
+                    <select
+                      value={formData.investorDetails.investor_type}
+                      onChange={(e) => handleInputChange(e, 'investor_type', 'investorDetails')}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Angel">Angel</option>
+                      <option value="VC">VC</option>
+                      <option value="Corporate">Corporate</option>
+                      <option value="Government">Government</option>
+                    </select>
+                  </div>
+
+                  {/* Funds Available */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Funds Available</label>
+                    <input
+                      type="number"
+                      value={formData.investorDetails.funds_available}
+                      onChange={(e) => handleInputChange(e, 'funds_available', 'investorDetails')}
+                      className="w-full p-2 border rounded"
+                      placeholder="Enter available funds"
+                    />
+                  </div>
+
+                  {/* Investment Interests */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Investment Interests</label>
+                    {formData.investorDetails.investment_interests.map((interest, index) => (
+                      <div key={index} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={interest}
+                          onChange={(e) => updateListItem('investment_interests', index, e.target.value, 'investorDetails')}
+                          className="flex-1 p-2 border rounded"
+                          placeholder="Enter investment interest"
+                        />
+                        <button
+                          onClick={() => removeListItem('investment_interests', index, 'investorDetails')}
+                          className="px-3 py-1 text-red-500"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('investment_interests', 'investorDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Interest
+                    </button>
+                  </div>
+
+                  {/* Previous Investments */}
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">Previous Investments</label>
+                    {formData.investorDetails.previous_investments.map((investment, index) => (
+                      <div key={index} className="grid grid-cols-3 gap-2 mt-2">
+                        <input
+                          type="text"
+                          value={investment.startupName || ''}
+                          onChange={(e) =>
+                            updateListItem('previous_investments', index, { ...investment, startupName: e.target.value }, 'investorDetails')
+                          }
+                          className="p-2 border rounded"
+                          placeholder="Startup Name"
+                        />
+                        <input
+                          type="number"
+                          value={investment.amount || ''}
+                          onChange={(e) =>
+                            updateListItem('previous_investments', index, { ...investment, amount: e.target.value }, 'investorDetails')
+                          }
+                          className="p-2 border rounded"
+                          placeholder="Amount"
+                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="date"
+                            value={investment.date || ''}
+                            onChange={(e) =>
+                              updateListItem('previous_investments', index, { ...investment, date: e.target.value }, 'investorDetails')
+                            }
+                            className="flex-1 p-2 border rounded"
+                          />
+                          <button
+                            onClick={() => removeListItem('previous_investments', index, 'investorDetails')}
+                            className="px-3 py-1 text-red-500"
+                          >
+                            X
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => addListItem('previous_investments', 'investorDetails')}
+                      className="mt-2 text-indigo-600"
+                    >
+                      + Add Investment
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="mt-8 flex justify-end">
+            <button
+              onClick={handleSave}
+              disabled={(!hasUserDetailsChanged && !hasRoleDetailsChanged) || isSaving}
+              className={`rounded-full border border-solid border-indigo-600 bg-indigo-600 py-2 px-4 text-sm font-semibold text-white shadow transition-all duration-500 ${
+                (!hasUserDetailsChanged && !hasRoleDetailsChanged) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+              }`}
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </div>
-
-        {/* Save Button */}
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={(!hasUserDetailsChanged && !hasRoleDetailsChanged) || isSaving}
-            className={`rounded-full border border-solid border-indigo-600 bg-indigo-600 py-2 px-4 text-sm font-semibold text-white shadow transition-all duration-500 ${
-              (!hasUserDetailsChanged && !hasRoleDetailsChanged) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
-            }`}
-          >
-            {isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

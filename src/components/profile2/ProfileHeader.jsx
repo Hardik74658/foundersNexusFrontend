@@ -2,29 +2,25 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Toast from '../layout/Toast.jsx';
+import Loader from '../layout/Loader.jsx';
 
-const ProfileHeader = ({ user, openPostModal  }) => {
+const ProfileHeader = ({ user, openPostModal }) => {
   const navigate = useNavigate();
-  // Current logged-in user's id from localStorage
   const [currentUserId, setCurrentUserId] = useState(null);
-  // Determines if the profile being viewed belongs to the current user
   const [isCurrentUser, setIsCurrentUser] = useState(false);
-  // Follow toggle state: whether current user is following this profile
   const [isFollowing, setIsFollowing] = useState(false);
-  // Local counts for followers and following
   const [followersCount, setFollowersCount] = useState(user.followers ? user.followers.length : 0);
   const [followingCount, setFollowingCount] = useState(user.following ? user.following.length : 0);
-
-  // Modal states for showing list of followers/following
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); // "followers" or "following"
+  const [modalType, setModalType] = useState("");
   const [modalList, setModalList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
 
-  // Fallback URLs if not provided by user data
   const fallbackCover = "https://pagedone.io/asset/uploads/1705473378.png";
   const fallbackAvatar = "https://static.vecteezy.com/system/resources/previews/034/324/147/large_2x/front-view-of-an-animated-boy-standing-wearing-tshirt-character-design-free-photo.jpeg";
 
-  // On mount, fetch current user id and set relevant state
   useEffect(() => {
     const id = localStorage.getItem('userId');
     setCurrentUserId(id);
@@ -36,9 +32,9 @@ const ProfileHeader = ({ user, openPostModal  }) => {
     setFollowingCount(user.following ? user.following.length : 0);
   }, [user]);
 
-  // Handler for follow toggle. It calls the API endpoint to toggle follow status.  
   const handleFollowToggle = async () => {
     if (!currentUserId) return;
+    setLoading(true);
     try {
       const response = await axios.get(`http://127.0.0.1:8000/users/${user._id}/${currentUserId}`, {
         headers: { accept: 'application/json' }
@@ -47,25 +43,36 @@ const ProfileHeader = ({ user, openPostModal  }) => {
       if (message.includes("Added")) {
         setIsFollowing(true);
         setFollowersCount((prev) => prev + 1);
+        setToastMessage("You are now following this user.");
       } else if (message.includes("Removed")) {
         setIsFollowing(false);
         setFollowersCount((prev) => prev - 1);
+        setToastMessage("You have unfollowed this user.");
       }
     } catch (error) {
-      console.error("Error toggling follow:", error);
+      setToastMessage("Error toggling follow status.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEditProfile =async () =>{
-    const res =  await axios.get(`/users/${user._id}`)
-    const userString = JSON.stringify(res.data)
-    navigate("/user/editProfile",{state : {user:userString}})
-  }
+  const handleEditProfile = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/users/${user._id}`);
+      const userString = JSON.stringify(res.data);
+      navigate("/user/editProfile", { state: { user: userString } });
+    } catch (error) {
+      setToastMessage("Error fetching profile data.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Open modal handler: type can be "followers" or "following"
   const openModal = async (type) => {
     setModalType(type);
     setShowModal(true);
+    setLoading(true);
     try {
       let endpoint = "";
       if (type === "followers") {
@@ -73,11 +80,12 @@ const ProfileHeader = ({ user, openPostModal  }) => {
       } else {
         endpoint = `http://127.0.0.1:8000/users/${user._id}/following`;
       }
-      console.log(endpoint);
       const res = await axios.get(endpoint, { headers: { accept: 'application/json' } });
       setModalList(res.data[type]);
     } catch (error) {
-      console.error("Error fetching modal list:", error);
+      setToastMessage("Error fetching modal list.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -88,6 +96,18 @@ const ProfileHeader = ({ user, openPostModal  }) => {
 
   return (
     <section className="relative pt-24 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-24 bg-white shadow">
+      {loading && (
+        <div className="absolute inset-0 flex justify-center items-center bg-black/30 z-50">
+          <Loader />
+        </div>
+      )}
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          show={true}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       {/* Cover Image */}
       <img
         src={user.coverImage || fallbackCover}
@@ -137,7 +157,7 @@ const ProfileHeader = ({ user, openPostModal  }) => {
                   Edit Profile
                 </button>
                 <button
-                  onClick={openPostModal} // Ensure this calls the passed function
+                  onClick={openPostModal}
                   className="rounded-full border border-solid border-indigo-600 bg-indigo-600 py-2 px-3 sm:py-3 sm:px-4 text-sm sm:text-base font-semibold text-white whitespace-nowrap shadow transition-all duration-500 hover:shadow-gray-200 hover:bg-indigo-700 hover:border-indigo-700"
                 >
                   Create New Post

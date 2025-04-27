@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { UploadLoader } from '../layout/Loader';
+import Loader from '../layout/Loader';
+import Toast from '../layout/Toast';
 import {
   CloudArrowUpIcon,
   DocumentTextIcon,
@@ -56,7 +58,7 @@ export default function Pitch() {
   const [pitchDecks, setPitchDecks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   const roundOptions = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth'];
 
@@ -111,7 +113,7 @@ export default function Pitch() {
         setActiveId(activeDeck.id);
       }
     } catch (err) {
-      setError('Failed to fetch pitch decks. Please try again later.');
+      setToast({ show: true, message: 'Failed to fetch pitch decks. Please try again later.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -195,8 +197,7 @@ export default function Pitch() {
         }
       });
 
-      setSuccessMessage('Pitch deck uploaded successfully!');
-      setTimeout(() => setSuccessMessage(null), 5000);
+      setToast({ show: true, message: 'Pitch deck uploaded successfully!', type: 'success' });
 
       setFile(null);
       setTitle('');
@@ -208,7 +209,7 @@ export default function Pitch() {
 
       fetchPitchDecks();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to upload pitch deck. Please try again.');
+      setToast({ show: true, message: err?.response?.data?.detail || 'Failed to upload pitch deck. Please try again.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -235,16 +236,16 @@ export default function Pitch() {
       );
       setActiveId(id);
 
-      setSuccessMessage('Pitch deck activated successfully!');
-      setTimeout(() => setSuccessMessage(null), 5000);
+      setToast({ show: true, message: 'Pitch deck activated successfully!', type: 'success' });
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to activate pitch deck. Please try again.');
+      setToast({ show: true, message: err?.response?.data?.detail || 'Failed to activate pitch deck. Please try again.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
 
   const deletePitchDeck = async (id) => {
+    setToast({ show: false, message: '', type: 'success' });
     if (window.confirm('Are you sure you want to delete this pitch deck? This action cannot be undone.')) {
       try {
         setIsLoading(true);
@@ -258,10 +259,9 @@ export default function Pitch() {
 
         setPitchDecks(pitchDecks.filter((deck) => deck._id !== id && deck.id !== id));
 
-        setSuccessMessage('Pitch deck deleted successfully!');
-        setTimeout(() => setSuccessMessage(null), 5000);
+        setToast({ show: true, message: 'Pitch deck deleted successfully!', type: 'success' });
       } catch (err) {
-        setError(err.response?.data?.detail || 'Failed to delete pitch deck. Please try again.');
+        setToast({ show: true, message: err?.response?.data?.detail || 'Failed to delete pitch deck. Please try again.', type: 'error' });
       } finally {
         setIsLoading(false);
       }
@@ -278,6 +278,21 @@ export default function Pitch() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6 font-sans">
+      {/* Toast Positioning */}
+      <div className="fixed top-5 right-5 z-50">
+        <Toast
+          show={toast.show}
+          message={toast.message}
+          onUndo={() => setToast({ ...toast, show: false })}
+          onClose={() => setToast({ ...toast, show: false })}
+        />
+      </div>
+      {/* Loader Centered */}
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+          <Loader />
+        </div>
+      )}
       <header className="flex items-center justify-between py-4 px-2">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-pink-500 rounded-xl flex items-center justify-center shadow-md">
@@ -828,32 +843,6 @@ export default function Pitch() {
             </div>
           </div>
         </section>
-
-        <AnimatePresence>
-          {successMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center"
-            >
-              <CheckCircleIcon className="h-5 w-5 mr-2" />
-              {successMessage}
-            </motion.div>
-          )}
-
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="fixed bottom-5 right-5 bg-red-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center"
-            >
-              <ExclamationCircleIcon className="h-5 w-5 mr-2" />
-              {error}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </main>
 
       <footer className="mt-16 text-center text-gray-500 text-sm">

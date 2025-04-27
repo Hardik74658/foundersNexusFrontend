@@ -215,95 +215,51 @@ const UploadLoader = () => {
         </div>
     );
 };
+
 const Loader = () => {
-    return (
-      <StyledWrapper>
-        <div className="pyramid-loader">
-          <div className="wrapper">
-            <span className="side side1" />
-            <span className="side side2" />
-            <span className="side side3" />
-            <span className="side side4" />
-            <span className="shadow" />
-          </div>
-        </div>
-      </StyledWrapper>
-    );
+  return (
+    <StyledWrapper>
+      <div className="loader" />
+    </StyledWrapper>
+  );
+}
+
+const StyledWrapper = styled.div`
+  .loader {
+    display: block;
+    --height-of-loader: 4px;
+    --loader-color: #0071e2;
+    width: 130px;
+    height: var(--height-of-loader);
+    border-radius: 30px;
+    background-color: rgba(0,0,0,0.2);
+    position: relative;
   }
-  
-  const StyledWrapper = styled.div`
-    .pyramid-loader {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      display: block;
-      transform-style: preserve-3d;
-      transform: rotateX(-20deg);
-    }
-  
-    .wrapper {
-      position: relative;
+
+  .loader::before {
+    content: "";
+    position: absolute;
+    background: var(--loader-color);
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    border-radius: 30px;
+    animation: moving 1s ease-in-out infinite;
+    ;
+  }
+
+  @keyframes moving {
+    50% {
       width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      animation: spin 4s linear infinite;
     }
-  
-    @keyframes spin {
-      100% {
-        transform: rotateY(360deg);
-      }
-    }
-  
-    .pyramid-loader .wrapper .side {
-      width: 70px;
-      height: 70px;
-      /* you can choose any gradient or color you want */
-      /* background: radial-gradient( #2F2585 10%, #F028FD 70%, #2BDEAC 120%); */
-      position: absolute;
-      top: 0;
-      left: 0;
+
+    100% {
+      width: 0;
       right: 0;
-      bottom: 0;
-      margin: auto;
-      transform-origin: center top;
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      left: unset;
     }
-  
-    .pyramid-loader .wrapper .side1 {
-      transform: rotateZ(-30deg) rotateY(90deg);
-      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
-    }
-  
-    .pyramid-loader .wrapper .side2 {
-      transform: rotateZ(30deg) rotateY(90deg);
-      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
-    }
-  
-    .pyramid-loader .wrapper .side3 {
-      transform: rotateX(30deg);
-      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
-    }
-  
-    .pyramid-loader .wrapper .side4 {
-      transform: rotateX(-30deg);
-      background: linear-gradient(to bottom right, #1afbf0, #da00ff);
-    }
-  
-    .pyramid-loader .wrapper .shadow {
-      width: 60px;
-      height: 60px;
-      background: #8b5ad5;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      margin: auto;
-      transform: rotateX(90deg) translateZ(-40px);
-      filter: blur(12px);
-    }`;
-  
-  
-export { UploadLoader, Loader };
+  }`;
+
 export default Loader;
+export {UploadLoader};

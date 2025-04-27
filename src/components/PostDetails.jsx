@@ -8,10 +8,12 @@ import {
   ArrowLeftIcon, 
   ShareIcon, 
   BookmarkIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { useSelector } from 'react-redux';
 import Toast from '../components/layout/Toast';
+import Confirmation from '../components/layout/Confirmation';
 
 const PostDetails = () => {
   const { postId } = useParams();
@@ -31,6 +33,7 @@ const PostDetails = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
   const [animateLike, setAnimateLike] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -65,11 +68,17 @@ const PostDetails = () => {
     }
   }, [postId, fetchPost]);
 
-  const hasUserLiked = post?.likes?.includes(currentUserData.id);
+  const hasUserLiked = post?.likes?.includes(currentUserData?.id);
 
   const handleLike = async () => {
-    const userId = currentUserData.id;
-    if (!userId) return;
+    const userId = currentUserData?.id;
+    if (!userId) {
+      setToastMessage('Please log in to like posts');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      return;
+    }
 
     setAnimateLike(true);
     setTimeout(() => setAnimateLike(false), 500);
@@ -86,7 +95,7 @@ const PostDetails = () => {
     });
 
     try {
-      const response = await axios.post(`http://localhost:8000/posts/${postId}/like/${userId}`);
+      await axios.post(`http://localhost:8000/posts/${postId}/like/${userId}`);
       
       setToastMessage(hasUserLiked ? 'Post unliked' : 'Post liked');
       setToastType(hasUserLiked ? 'info' : 'success');
@@ -111,6 +120,54 @@ const PostDetails = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }
+  };
+
+  const handleSharePost = async () => {
+    const postUrl = window.location.href;
+    const title = post?.title || 'Check out this post';
+    const text = 'Check out this interesting post from FoundersNexus!';
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text,
+          url: postUrl,
+        });
+        
+        setToastMessage('Post shared successfully');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error sharing:', error);
+          handleFallbackShare();
+        }
+      }
+    } else {
+      handleFallbackShare();
+    }
+  };
+  
+  const handleFallbackShare = () => {
+    const postUrl = window.location.href;
+    
+    navigator.clipboard.writeText(postUrl).then(
+      () => {
+        setToastMessage('Link copied to clipboard');
+        setToastType('success');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+        setToastMessage('Failed to copy link');
+        setToastType('error');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    );
   };
 
   const handlePostComment = async () => {
@@ -145,6 +202,29 @@ const PostDetails = () => {
       setTimeout(() => setShowToast(false), 3000);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    setShowConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowConfirm(false);
+    try {
+      await axios.delete(`http://localhost:8000/posts/${postId}`);
+      setToastMessage('Post deleted successfully');
+      setToastType('success');
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+        navigate(-1);
+      }, 1500);
+    } catch (error) {
+      setToastMessage('Failed to delete post');
+      setToastType('error');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     }
   };
 
@@ -191,9 +271,19 @@ const PostDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       {/* Toast Message */}
       {showToast && <Toast message={toastMessage} type={toastType} />}
+      {/* Confirmation Dialog */}
+      {showConfirm && (
+        <Confirmation
+          message="Are you sure you want to delete this post?"
+          confirmText="Delete"
+          cancelText="Cancel"
+          onConfirm={confirmDelete}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
       
       <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         {/* Main Content Area */}
@@ -208,7 +298,7 @@ const PostDetails = () => {
           </button>
           
           {/* Post Content Card */}
-          <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm mb-8">
+          <div className="bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm mb-8 relative">
             {/* Hero Image with better scaling */}
             {post.image_url && (
               <div className="relative h-[400px] overflow-hidden">
@@ -257,11 +347,13 @@ const PostDetails = () => {
                     className={`flex items-center gap-2 ${animateLike ? 'scale-110' : 'scale-100'} transition-all`}
                   >
                     {hasUserLiked ? (
-                      <HeartIconSolid className="w-5 h-5 text-indigo-600" />
+                      <HeartIconSolid className="w-5 h-5 text-red-500" />
                     ) : (
-                      <HeartIconOutline className="w-5 h-5 text-gray-500 hover:text-indigo-600" />
+                      <HeartIconOutline className="w-5 h-5 text-gray-500 hover:text-red-500" />
                     )}
-                    <span className="text-sm font-medium">{post.likes?.length || 0}</span>
+                    <span className={`text-sm font-medium ${hasUserLiked ? 'text-red-500' : 'text-gray-700'}`}>
+                      {post.likes?.length || 0}
+                    </span>
                   </button>
                   
                   <button 
@@ -277,11 +369,16 @@ const PostDetails = () => {
                   <button className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors">
                     <BookmarkIcon className="w-5 h-5 text-gray-600" />
                   </button>
-                  <button className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <button 
+                    className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors"
+                    onClick={handleSharePost}
+                  >
                     <ShareIcon className="w-5 h-5 text-gray-600" />
                   </button>
                 </div>
               </div>
+
+            
             </div>
           </div>
           
@@ -393,7 +490,11 @@ const PostDetails = () => {
                 Save Post
               </button>
               
-              <button className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 py-3 px-4 rounded-xl font-medium transition-colors">
+              <button 
+                className="w-full bg-gray-50 hover:bg-gray-100 text-gray-800 py-3 px-4 rounded-xl font-medium transition-colors flex items-center justify-center"
+                onClick={handleSharePost}
+              >
+                <ShareIcon className="w-5 h-5 mr-2" />
                 Share Post
               </button>
             </div>
@@ -413,8 +514,12 @@ const PostDetails = () => {
                 </div>
                 
                 <div className="flex items-start">
-                  <div className="bg-indigo-100 p-2 rounded-full mr-3">
-                    <HeartIconOutline className="h-4 w-4 text-indigo-600" />
+                  <div className={`${hasUserLiked ? 'bg-red-100' : 'bg-indigo-100'} p-2 rounded-full mr-3`}>
+                    {hasUserLiked ? (
+                      <HeartIconSolid className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <HeartIconOutline className="h-4 w-4 text-indigo-600" />
+                    )}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900">Likes</p>
@@ -432,11 +537,27 @@ const PostDetails = () => {
                     <p className="text-sm font-medium text-gray-900">Posted</p>
                     <p className="text-xs text-gray-500">{formatDate(post.createdAt)}</p>
                   </div>
+
                 </div>
               </div>
             </div>
+             {/* Delete Button at the end of the post, only for post owner */}
+             {post && currentUserData && post.user && post.user._id === currentUserData.id && (
+                <div className="flex justify-end mt-12">
+                  <button
+                    onClick={handleDeletePost}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg text-red-600 font-light hover:font-medium bg-white hover:bg-red-50 hover:text-red-600 hover:shadow-md transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-red-200 group outline-1 outline-red-400 "
+                    title="Delete Post"
+                    aria-label="Delete Post"
+                  >
+                    <TrashIcon className="w-5 h-5 group-hover:text-red-600 transition-colors duration-150" />
+                    <span className="tracking-wide text-sm ">Delete</span>
+                  </button>
+                </div>
+              )}
           </div>
         </div>
+        
       </div>
     </div>
   );

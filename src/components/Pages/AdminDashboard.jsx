@@ -4,6 +4,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom"; // Add useNavigate
 import { useSelector } from "react-redux"; // Add useSelector
 import { getCurrentUser } from "../../services/auth"; // Add getCurrentUser import
+import Loader from "../layout/Loader"; // Import Loader
+import Toast from "../layout/Toast"; // Import Toast
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -420,22 +422,26 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : error ? (
-          <div className="text-center p-8 bg-red-50 rounded-lg text-red-500">
-            {error}
-            <button 
-              onClick={() => error.includes("logged in") ? navigate("/login") : window.location.reload()}
-              className="ml-4 underline"
-            >
-              {error.includes("logged in") ? "Go to Login" : "Retry"}
-            </button>
-          </div>
-        ) : authorized ? (
+      {/* Toast Positioning */}
+      <div className="fixed top-5 right-5 z-50">
+        {error && (
+          <Toast
+            show={!!error}
+            message={error}
+            onUndo={() => {}}
+            onClose={() => setError(null)}
+          />
+        )}
+      </div>
+      {/* Loader Centered */}
+      {(loading) && (
+        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-60 z-50">
+          <Loader />
+        </div>
+      )}
+      <div className="max-w-7xl mx-auto px-4 py-6" style={{ filter: loading ? 'blur(2px)' : 'none', pointerEvents: loading ? 'none' : 'auto' }}>
+        {/* Only show content if not loading and not error */}
+        {!loading && !error && authorized ? (
           <>
             {/* Header with Logo and Navigation */}
             <header className="flex flex-col md:flex-row justify-between items-center mb-8">

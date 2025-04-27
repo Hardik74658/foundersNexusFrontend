@@ -3,10 +3,8 @@ import signup from '../assets/signup.jpg';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/auth';
-import { useDispatch } from 'react-redux';
-import { login as sliceLogin } from '../redux/slices/authSlice';
-import Toast from './layout/Toast'; // import the Toast component
+import Toast from './layout/Toast'; // Import the Toast component
+import Loader from './layout/Loader'; // Import the Loader component
 
 const ForgotPassword = () => {
   const {
@@ -36,8 +34,8 @@ const ForgotPassword = () => {
         }, 3000);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setError(error);
+      console.error("Error:", error);
+      setError(error.response?.data?.detail || 'An error occurred');
       setLoader(false);
     }
   };
@@ -55,6 +53,13 @@ const ForgotPassword = () => {
           onClose={() => setToast({ show: false, message: '' })}
         />
       </div>
+
+      {/* Loader */}
+      {loader && (
+        <div className="absolute inset-0 flex justify-center items-center bg-black/30 z-50">
+          <Loader />
+        </div>
+      )}
 
       <div className="flex flex-col-reverse md:flex-row bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl w-full">
         {/* Left Side: Form */}
@@ -87,17 +92,17 @@ const ForgotPassword = () => {
               type="submit"
               className="w-full py-3 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-colors"
             >
-              {loader ? 'Sending...' : 'Send Reset Password Link'}
+              Send Reset Password Link
             </button>
             {/* Error Message */}
             {error && (
-              <div className="text-red-500 text-center mt-2">{error.message}</div>
+              <div className="text-red-500 text-center mt-2">{error}</div>
             )}
           </form>
           <br />
           <div className="flex items-center justify-center gap-4">
-            <Link to={"/forgotpwd"} className="text-blue-500 text-center cursor-pointer">Login</Link>/
-            <Link to={"/forgotpwd"} className="text-blue-500 text-center cursor-pointer">Register</Link>
+            <Link to={"/login"} className="text-blue-500 text-center cursor-pointer">Login</Link>/
+            <Link to={"/signup"} className="text-blue-500 text-center cursor-pointer">Register</Link>
           </div>
         </div>
 

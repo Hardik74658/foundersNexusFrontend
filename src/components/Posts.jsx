@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import PostCard from './PostCard';
+import Loader from './layout/Loader.jsx';
+import Toast from './layout/Toast.jsx';
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(1); 
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true); 
+  const [toast, setToast] = useState({ show: false, message: '' });
   const observer = useRef();
 
   const fetchPosts = async () => {
@@ -31,6 +34,7 @@ const Posts = () => {
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setToast({ show: true, message: 'Error fetching posts.' });
     }
     setLoading(false);
   };
@@ -79,12 +83,21 @@ const Posts = () => {
       console.log(response.data.message);
     } catch (error) {
       console.error('Error toggling like:', error);
+      setToast({ show: true, message: 'Error toggling like.' });
       // Optionally revert the optimistic update here if necessary
     }
   };
 
   return (
     <div className="py-12">
+      {/* Toast for errors */}
+      <div className="fixed top-5 right-5 z-50">
+        <Toast
+          show={toast.show}
+          message={toast.message}
+          onClose={() => setToast({ show: false, message: '' })}
+        />
+      </div>
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-bold text-4xl text-gray-900 text-center mb-12">
           Our Latest Posts
@@ -115,7 +128,9 @@ const Posts = () => {
           }
         })}
         {loading && (
-          <div className="text-center mt-4 text-gray-600">Loading...</div>
+          <div className="flex justify-center items-center mt-4">
+            <Loader />
+          </div>
         )}
         {!hasMore && posts.length > 0 && (
           <div className="text-center mt-4 text-gray-600">No more posts.</div>
