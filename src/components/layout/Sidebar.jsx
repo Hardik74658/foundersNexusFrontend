@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { logout } from '../redux/slices/authSlice';
+import { logout } from '../../redux/slices/authSlice';
 import { Link } from 'react-router-dom';
 
 import {

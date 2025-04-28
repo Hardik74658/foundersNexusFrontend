@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import PostCard from './PostCard';
-import Loader from './layout/Loader.jsx';
-import Toast from './layout/Toast.jsx';
+import PostCard from './PostCard.jsx';
+import Loader from '../layout/Loader.jsx';
+import Toast from '../layout/Toast.jsx';
 
 const Posts = () => {
   const [posts, setPosts] = useState([]);

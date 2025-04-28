@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import signup from '../assets/signup.jpg';
+import signup from '../../assets/signup.jpg';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/auth';
+import { login } from '../../services/auth';
 import { useDispatch } from 'react-redux';
-import { login as sliceLogin } from '../redux/slices/authSlice';
-import Toast from './layout/Toast.jsx';
-import Loader from './layout/Loader.jsx';
+import { login as sliceLogin } from '../../redux/slices/authSlice';
+import Toast from '../layout/Toast.jsx';
+import Loader from '../layout/Loader.jsx';
 
 const Login = () => {
   const {

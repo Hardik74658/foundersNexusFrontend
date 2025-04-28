@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import signup from '../assets/signup.jpg';
+import signup from '../../assets/signup.jpg';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import Toast from './layout/Toast'; // Import the Toast component
-import Loader from './layout/Loader'; // Import the Loader component
+import Toast from '../layout/Toast'; // Import the Toast component
+import Loader from '../layout/Loader'; // Import the Loader component
 
 const ForgotPassword = () => {
   const {

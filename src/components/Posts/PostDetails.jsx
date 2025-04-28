@@ -12,8 +12,8 @@ import {
   TrashIcon
 } from '@heroicons/react/24/outline';
 import { useSelector } from 'react-redux';
-import Toast from '../components/layout/Toast';
-import Confirmation from '../components/layout/Confirmation';
+import Toast from '../layout/Toast.jsx'
+import Confirmation from '../layout/Confirmation';
 
 const PostDetails = () => {
   const { postId } = useParams();

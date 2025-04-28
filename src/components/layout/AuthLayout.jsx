@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Navbar from '../Navbar';
-import Sidebar from '../Sidebar';
+import Navbar from './Navbar';
+import Sidebar from './Sidebar';
 import Loader from './Loader';
 
 const founderOnlyRoutes = ['/startup', '/startup/edit', '/pitch'];

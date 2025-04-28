@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import ProfileHeader from './ProfileHeader';
-import PostCard from '../PostCard.jsx';
+import PostCard from '../Posts/PostCard.jsx';
 import CreatePostModal from '../Posts/CreatePostModal';
 import { useSelector } from 'react-redux';
 import Loader from '../layout/Loader.jsx';
