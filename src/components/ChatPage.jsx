@@ -148,7 +148,7 @@ function Chat() {
   };
 
   const handleGoBack = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   // --- UI ---
@@ -174,20 +174,8 @@ function Chat() {
     }
     
     if (userList.length === 0) return (
-      <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-white to-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-3xl shadow-lg max-w-md w-full text-center">
-          <div className="bg-indigo-100 mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <ChatBubbleBottomCenterTextIcon className="h-8 w-8 text-indigo-500" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">No conversations yet</h3>
-          <p className="text-gray-600 mb-6">There are no other users available to chat with at the moment.</p>
-          <button 
-            onClick={handleGoBack}
-            className="px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition-all"
-          >
-            Go back to home
-          </button>
-        </div>
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader />
       </div>
     );
     
@@ -323,7 +311,7 @@ function Chat() {
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <div className="flex items-center">
               <button 
-                onClick={() => navigate('/chat')}
+                onClick={handleGoBack}
                 className="flex items-center text-gray-500 hover:text-indigo-600 mr-4"
               >
                 <ArrowLeftIcon className="h-5 w-5" />

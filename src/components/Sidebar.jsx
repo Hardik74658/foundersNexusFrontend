@@ -116,6 +116,21 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
         name: 'Dashboard',
         path: '/admin',
         icon: Squares2X2Icon
+      },
+      {
+        name: 'Users', 
+        path: '/users', 
+        icon: UserIcon
+      },
+      {
+        name: 'Startups', 
+        path: '/startups', 
+        icon: BuildingOfficeIcon
+      },
+      {
+        name: 'Posts', 
+        path: '/posts', 
+        icon: DocumentTextIcon
       }
     ];
   }

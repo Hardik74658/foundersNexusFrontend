@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Sidebar from '../Sidebar';
+import Loader from './Loader';
 
 const founderOnlyRoutes = ['/startup', '/startup/edit', '/pitch'];
 
@@ -57,7 +58,7 @@ const AuthLayout = ({ children, authentication }) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        Loading...
+        <Loader/>
       </div>
     );
   }
@@ -66,11 +67,10 @@ const AuthLayout = ({ children, authentication }) => {
   if (authentication && authStatus && role === 'Admin') {
     return (
       <div className="flex min-h-screen">
-        {/* You can create a separate AdminSidebar/AdminNavbar if needed */}
-        {/* <AdminSidebar /> */}
-        <div className="flex-1 flex flex-col">
-          {/* <AdminNavbar /> */}
-          <main className="flex-1 overflow-y-auto">{children}</main>
+        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} userRole="Admin" />
+        <div className="flex-1 flex flex-col md:ml-60">
+          <Navbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+          <main className="flex-1 overflow-y-auto bg-gradient-to-br from-blue-50 to-indigo-50">{children}</main>
         </div>
       </div>
     );

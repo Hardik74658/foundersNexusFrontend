@@ -24,6 +24,7 @@ const ProfilePage = () => {
   const [error, setError] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [entrepreneurDetails, setEntrepreneurDetails] = useState(null);
+  const [investorDetails, setInvestorDetails] = useState(null);
 
   // Fetch profile details
   useEffect(() => {
@@ -54,6 +55,34 @@ const ProfilePage = () => {
             }
           } catch (err) {
             setEntrepreneurDetails(null);
+          }
+        }
+
+        // Fetch investor details if applicable
+        if (
+          response.data &&
+          (
+            (response.data.role && response.data.role.name?.toLowerCase() === 'investor') ||
+            response.data.investor_type ||
+            response.data.investment_interests
+          )
+        ) {
+          try {
+            if (!response.data.investorDetails) {
+              const invRes = await axios.get(
+                `http://localhost:8000/users/investors/${userId}`
+              );
+              console.log('Investor Details API Response:', invRes.data);
+              
+              // Make sure we're using the full investor details from the API response
+              // The top-level object contains fields like investor_type, funds_available, etc.
+              setInvestorDetails(invRes.data);
+            } else {
+              setInvestorDetails(response.data.investorDetails);
+            }
+          } catch (err) {
+            console.error('Error fetching investor details:', err);
+            setInvestorDetails(null);
           }
         }
       } catch (err) {
@@ -149,6 +178,14 @@ const ProfilePage = () => {
       </div>
     );
   }
+
+  // Check if the profile is an investor
+  const isInvestor = profile && (
+    (profile.role && profile.role.name?.toLowerCase() === 'investor') ||
+    profile.investor_type ||
+    profile.investment_interests ||
+    investorDetails
+  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -277,42 +314,45 @@ const ProfilePage = () => {
       )}
 
       {/* Investor Details Section - Show if profile is investor */}
-      {profile && profile.role?.name?.toLowerCase() === 'investor' && profile.investorDetails && (
+      {isInvestor && (
         <section className="py-6">
           <div className="max-w-4xl mx-auto px-4">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Investor Details</h2>
             <div className="bg-white p-6 rounded-xl shadow-md divide-y divide-gray-100">
               {/* Investor Type */}
-              <div className="py-4 first:pt-0">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                  </svg>
-                  Investor Type
-                </h3>
-                <div className="pl-2 border-l-2 border-indigo-200 bg-indigo-50/50 rounded p-2">
-                  <div className="font-medium text-gray-800">{profile.investorDetails.investor_type}</div>
+              {(investorDetails?.investor_type || profile.investor_type) && (
+                <div className="py-4 first:pt-0">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    Investor Type
+                  </h3>
+                  <div className="pl-2 border-l-2 border-indigo-200 bg-indigo-50/50 rounded p-2">
+                    <div className="font-medium text-gray-800">{investorDetails?.investor_type || profile.investor_type}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {/* Funds Available */}
-              {profile.investorDetails.funds_available && (
+              {/* Contact Details */}
+              {(investorDetails?.contact_details || profile.contact_details) && (
                 <div className="py-4">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                     </svg>
-                    Funds Available
+                    Contact Details
                   </h3>
-                  <div className="pl-2 border-l-2 border-emerald-200 bg-emerald-50/50 rounded p-2">
-                    <div className="font-medium text-gray-800">${Number(profile.investorDetails.funds_available).toLocaleString()}</div>
+                  <div className="pl-2 border-l-2 border-blue-200 bg-blue-50/50 rounded p-2">
+                    <div className="font-medium text-gray-800">{investorDetails?.contact_details || profile.contact_details}</div>
                   </div>
                 </div>
               )}
               
               {/* Investment Interests */}
-              {Array.isArray(profile.investorDetails.investment_interests) && profile.investorDetails.investment_interests.length > 0 && (
+              {(Array.isArray(investorDetails?.investment_interests) && investorDetails.investment_interests.length > 0) || 
+               (Array.isArray(profile.investment_interests) && profile.investment_interests.length > 0) && (
                 <div className="py-4">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-rose-500" viewBox="0 0 20 20" fill="currentColor">
@@ -322,15 +362,18 @@ const ProfilePage = () => {
                     Investment Interests
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {profile.investorDetails.investment_interests.map((interest, idx) => (
+                    {(investorDetails?.investment_interests || profile.investment_interests).map((interest, idx) => (
                       <span key={idx} className="px-3 py-1 bg-rose-50 text-rose-700 rounded-full text-sm border border-rose-100 hover:bg-rose-100 transition-colors duration-200">{interest}</span>
                     ))}
                   </div>
                 </div>
               )}
               
-              {/* Previous Investments */}
-              {Array.isArray(profile.investorDetails.previous_investments) && profile.investorDetails.previous_investments.length > 0 && (
+              {/* Previous Investments - Handle both object and array cases */}
+              {((investorDetails?.previous_investments || profile.previous_investments) && (
+                Array.isArray(investorDetails?.previous_investments || profile.previous_investments) || 
+                typeof (investorDetails?.previous_investments || profile.previous_investments) === 'object'
+              )) && (
                 <div className="py-4">
                   <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-cyan-500" viewBox="0 0 20 20" fill="currentColor">
@@ -339,18 +382,61 @@ const ProfilePage = () => {
                     Previous Investments
                   </h3>
                   <div className="space-y-4">
-                    {profile.investorDetails.previous_investments.map((investment, idx) => (
-                      <div key={idx} className="pl-2 border-l-2 border-cyan-200 bg-cyan-50/50 rounded p-2">
-                        <div className="font-medium text-gray-800">{investment.startupName || 'Unnamed Startup'}</div>
-                        {investment.amount && (
+                    {Array.isArray(investorDetails?.previous_investments || profile.previous_investments) ? (
+                      // Handle array of investments
+                      (investorDetails?.previous_investments || profile.previous_investments).map((investment, idx) => (
+                        <div key={idx} className="pl-2 border-l-2 border-cyan-200 bg-cyan-50/50 rounded p-2">
+                          <div className="font-medium text-gray-800">{investment.startup_name || 'Unnamed Startup'}</div>
+                          {investment.investment_amount && (
+                            <div className="text-sm text-gray-600">
+                              ${typeof investment.investment_amount === 'object' ? 
+                                Number(investment.investment_amount.$numberDecimal || 0).toLocaleString() : 
+                                Number(investment.investment_amount || 0).toLocaleString()} 
+                              {investment.date && <span className="text-gray-500"> • {new Date(investment.date.$date || investment.date).toLocaleDateString()}</span>}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      // Handle single investment object
+                      <div className="pl-2 border-l-2 border-cyan-200 bg-cyan-50/50 rounded p-2">
+                        <div className="font-medium text-gray-800">
+                          {(investorDetails?.previous_investments || profile.previous_investments).startup_name || 'Unnamed Startup'}
+                        </div>
+                        {(investorDetails?.previous_investments || profile.previous_investments).investment_amount && (
                           <div className="text-sm text-gray-600">
-                            ${Number(investment.amount).toLocaleString()} 
-                            {investment.date && <span className="text-gray-500"> • {new Date(investment.date).toLocaleDateString()}</span>}
+                            ${typeof (investorDetails?.previous_investments || profile.previous_investments).investment_amount === 'object' ? 
+                              Number((investorDetails?.previous_investments || profile.previous_investments).investment_amount.$numberDecimal || 0).toLocaleString() : 
+                              Number((investorDetails?.previous_investments || profile.previous_investments).investment_amount || 0).toLocaleString()} 
+                            {(investorDetails?.previous_investments || profile.previous_investments).date && (
+                              <span className="text-gray-500"> • {new Date(
+                                (investorDetails?.previous_investments || profile.previous_investments).date.$date || 
+                                (investorDetails?.previous_investments || profile.previous_investments).date
+                              ).toLocaleDateString()}</span>
+                            )}
                           </div>
                         )}
-                        {investment.stage && <div className="mt-1 text-xs text-gray-600 bg-cyan-100 inline-block px-2 py-0.5 rounded-full">{investment.stage}</div>}
                       </div>
-                    ))}
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Funds Available */}
+              {investorDetails?.funds_available && (
+                <div className="py-4">
+                  <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zM12 2a1 1 0 01.967.744L14.146 7.2 17.5 9.134a1 1 0 010 1.732l-3.354 1.935-1.18 4.455a1 1 0 01-1.933 0L9.854 12.8 6.5 10.866a1 1 0 010-1.732l3.354-1.935 1.18-4.455A1 1 0 0112 2z" clipRule="evenodd" />
+                    </svg>
+                    Funds Available
+                  </h3>
+                  <div className="pl-2 border-l-2 border-green-200 bg-green-50/50 rounded p-2">
+                    <div className="font-medium text-gray-800">
+                      ${typeof investorDetails.funds_available === 'object' ? 
+                        Number(investorDetails.funds_available.$numberDecimal || 0).toLocaleString() : 
+                        Number(investorDetails.funds_available || 0).toLocaleString()}
+                    </div>
                   </div>
                 </div>
               )}

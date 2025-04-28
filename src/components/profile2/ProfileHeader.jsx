@@ -69,6 +69,10 @@ const ProfileHeader = ({ user, openPostModal }) => {
     }
   };
 
+  const handleMessageClick = () => {
+    navigate(`/chat/${user._id}`);
+  };
+
   const openModal = async (type) => {
     setModalType(type);
     setShowModal(true);
@@ -166,7 +170,7 @@ const ProfileHeader = ({ user, openPostModal }) => {
             ) : (
               <>
                 <button
-                  onClick={() => console.log('Message clicked')}
+                  onClick={handleMessageClick}
                   className="rounded-full border border-solid border-gray-300 bg-gray-50 py-2 px-3 sm:py-3 sm:px-4 text-sm sm:text-base font-semibold text-gray-900 shadow transition-all duration-500 hover:shadow-gray-50 hover:bg-gray-100 hover:border-gray-300"
                 >
                   Message
