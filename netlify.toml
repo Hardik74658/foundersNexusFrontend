@@ -2,7 +2,8 @@
 
 # Build settings
 [build]
-  publish = "build" # Update this with your actual build output directory (could be "dist", "build", "public", etc.)
+  command = "npm run build" # Ensure this matches your actual build command
+  publish = "dist" # Changed from "build" to "dist" which might be your actual output directory
 
 # Headers to handle mixed content
 [[headers]]
