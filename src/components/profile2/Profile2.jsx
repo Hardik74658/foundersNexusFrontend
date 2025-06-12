@@ -30,7 +30,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`htttp://13.232.209.194/users/${userId}`);
+        const response = await axios.get(`http://13.232.209.194/users/${userId}`);
         setProfile(response.data);
 
         // Fetch entrepreneur/founder details if applicable
@@ -47,7 +47,7 @@ const ProfilePage = () => {
           try {
             if (!response.data.entrepreneurDetails) {
               const entRes = await axios.get(
-                `htttp://13.232.209.194/users/entrepreneurs/${userId}`
+                `http://13.232.209.194/users/entrepreneurs/${userId}`
               );
               setEntrepreneurDetails(entRes.data);
             } else {
@@ -70,7 +70,7 @@ const ProfilePage = () => {
           try {
             if (!response.data.investorDetails) {
               const invRes = await axios.get(
-                `htttp://13.232.209.194/users/investors/${userId}`
+                `http://13.232.209.194/users/investors/${userId}`
               );
               console.log('Investor Details API Response:', invRes.data);
               
@@ -104,7 +104,7 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await axios.get(`htttp://13.232.209.194/posts/user/${userId}`);
+        const response = await axios.get(`http://13.232.209.194/posts/user/${userId}`);
         setPosts(response.data);
       } catch (err) {
         console.error('Error fetching posts:', err);
@@ -139,7 +139,7 @@ const ProfilePage = () => {
     );
 
     try {
-      const response = await axios.post(`htttp://13.232.209.194/posts/${postId}/like/${userId}`);
+      const response = await axios.post(`http://13.232.209.194/posts/${postId}/like/${userId}`);
       console.log(response.data.message);
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -157,7 +157,7 @@ const ProfilePage = () => {
   const handlePostCreated = () => {
     setIsPostModalOpen(false);
     setLoadingPosts(true);
-    axios.get(`htttp://13.232.209.194/posts/user/${userId}`).then((response) => {
+    axios.get(`http://13.232.209.194/posts/user/${userId}`).then((response) => {
       setPosts(response.data);
       setLoadingPosts(false);
     });

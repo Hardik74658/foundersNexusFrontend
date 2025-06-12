@@ -112,7 +112,7 @@ export default function Reg() {
         }
 
         userResponse = await axios.post(
-          "htttp://13.232.209.194/users", // Ensure this endpoint is correct
+          "http://13.232.209.194/users", // Ensure this endpoint is correct
           formData,
           {
             headers: {
@@ -141,7 +141,7 @@ export default function Reg() {
         };
         console.log('Founder Details:', founderDetails);
         try {
-          const founderResponse = await axios.post('htttp://13.232.209.194/users/entrepreneurs/', founderDetails);
+          const founderResponse = await axios.post('http://13.232.209.194/users/entrepreneurs/', founderDetails);
           founderId = founderResponse.data.entrepreneurId;
         } catch (err) {
           console.log("Error during founder creation:", err);
@@ -159,7 +159,7 @@ export default function Reg() {
         };
         console.log('Investor Details:', investorDetails);
         try {
-          const investorResponse = await axios.post('htttp://13.232.209.194/users/investors/', investorDetails);
+          const investorResponse = await axios.post('http://13.232.209.194/users/investors/', investorDetails);
           investorId = investorResponse.data.investorId;
         } catch (err) {
           console.log("Error during investor creation:", err);

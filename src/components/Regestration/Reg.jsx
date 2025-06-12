@@ -119,7 +119,7 @@ export default function Reg() {
       // Example API calls (uncomment and replace with actual API endpoints)
       let userId=null;
       try{
-        const userResponse = await axios.post('htttp://13.232.209.194/users', userDetails);
+        const userResponse = await axios.post('http://13.232.209.194/users', userDetails);
         userId = userResponse.data.user;
         console.log("User Id : ",userId)
       }
@@ -131,7 +131,7 @@ export default function Reg() {
       if (founderDetails) {
         try{
           founderDetails.userId = userId;
-          let founderResponse = await axios.post('htttp://13.232.209.194/users/entrepreneurs/', founderDetails);
+          let founderResponse = await axios.post('http://13.232.209.194/users/entrepreneurs/', founderDetails);
           founderId = founderResponse.data.entrepreneurId
         }
         catch(err){
@@ -143,7 +143,7 @@ export default function Reg() {
       if (investorDetails) {
         try{
           investorDetails.user_id = userId;
-          let investorResponse = await axios.post('htttp://13.232.209.194/users/investors/', investorDetails);
+          let investorResponse = await axios.post('http://13.232.209.194/users/investors/', investorDetails);
           investorId = investorResponse.data.investorId
         }
         catch(err){

@@ -79,7 +79,7 @@ function App() {
       });
   }, [dispatch]);
 
-  axios.defaults.baseURL = 'htttp://13.232.209.194';
+  axios.defaults.baseURL = 'http://13.232.209.194';
 
   return (
     <Routes>
