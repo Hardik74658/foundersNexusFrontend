@@ -3,9 +3,25 @@
  */
 import axios from 'axios';
 
-// Read environment variables - fixed to work with Vite's import.meta approach
-const useProxy = import.meta.env.VITE_USE_PROXY === 'true';
-const apiUrl = import.meta.env.VITE_API_URL || 'http://13.232.209.194:80';
+// Determine if we're in development or production
+const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost';
+
+// API configuration
+const apiConfig = {
+  // In development, use direct API calls to the backend
+  development: {
+    baseURL: 'http://13.232.209.194:80',
+    useProxy: false
+  },
+  // In production, use the Netlify proxy to avoid CORS and mixed content issues
+  production: {
+    baseURL: '',  // Empty because we'll use relative URLs with the proxy
+    useProxy: true
+  }
+};
+
+// Select the appropriate configuration
+const config = isDevelopment ? apiConfig.development : apiConfig.production;
 
 /**
  * Creates the appropriate URL for API calls
@@ -13,12 +29,15 @@ const apiUrl = import.meta.env.VITE_API_URL || 'http://13.232.209.194:80';
  * @returns {string} Complete URL to use for API calls
  */
 export const getApiUrl = (endpoint) => {
-  if (useProxy) {
-    // Use the Netlify proxy to avoid mixed content issues
-    return `/api/${endpoint}`;
+  // Remove leading slash if present
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
+  
+  if (config.useProxy) {
+    // Use the Netlify proxy
+    return `/api/${cleanEndpoint}`;
   } else {
-    // Direct API call (will have mixed content issues on HTTPS sites)
-    return `${apiUrl}/${endpoint}`;
+    // Direct API call
+    return `${config.baseURL}/${cleanEndpoint}`;
   }
 };
 
@@ -35,6 +54,9 @@ api.interceptors.request.use(config => {
   // If the URL doesn't start with http or /, use the getApiUrl helper
   if (!config.url.startsWith('http') && !config.url.startsWith('/')) {
     config.url = getApiUrl(config.url);
+  } else if (config.url.startsWith('/') && !config.url.startsWith('/api/')) {
+    // If it starts with / but not with /api/, add the /api prefix
+    config.url = `/api${config.url}`;
   }
   return config;
 });
