@@ -26,7 +26,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
     const userId = storedUser?.id || localUserId;
     if (userId) {
       axios
-        .get(`http://13.232.209.194/users/${userId}`)
+        .get(`/api/users/${userId}`)
         .then((response) => {
           setUserInfo(response.data);
         })
@@ -39,7 +39,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar, userRole }) => {
   useEffect(() => {
     if (userInfo?.currentStartup) {
       axios
-        .get(`http://13.232.209.194/startups/${userInfo.currentStartup}`)
+        .get(`/api/startups/${userInfo.currentStartup}`)
         .then((response) => {
           setCurrentStartup(response.data);
           console.log('Current startup details:', response.data);

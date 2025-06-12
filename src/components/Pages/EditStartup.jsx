@@ -35,7 +35,7 @@ const EditStartup = () => {
   const [toast, setToast] = useState({ show: false, message: '' });
 
   // API base URL
-  const API_BASE_URL = 'http://13.232.209.194';
+  const API_BASE_URL = '/api';
   
   // Headers for API requests
   const headers = {

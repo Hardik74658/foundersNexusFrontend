@@ -49,7 +49,7 @@ const PostDetails = () => {
 
   const fetchPost = useCallback(async () => {
     try {
-      const response = await axios.get(`http://13.232.209.194/posts/${postId}`);
+      const response = await axios.get(`/api/posts/${postId}`);
       setPost(response.data);
     } catch (err) {
       console.error('Error fetching post:', err.response?.data || err.message);
@@ -95,7 +95,7 @@ const PostDetails = () => {
     });
 
     try {
-      await axios.post(`http://13.232.209.194/posts/${postId}/like/${userId}`);
+      await axios.post(`/api/posts/${postId}/like/${userId}`);
       
       setToastMessage(hasUserLiked ? 'Post unliked' : 'Post liked');
       setToastType(hasUserLiked ? 'info' : 'success');
@@ -183,7 +183,7 @@ const PostDetails = () => {
       };
       
       await axios.post(
-        `http://13.232.209.194/posts/${postId}/comments`,
+        `/api/posts/${postId}/comments`,
         commentData
       );
       
@@ -212,7 +212,7 @@ const PostDetails = () => {
   const confirmDelete = async () => {
     setShowConfirm(false);
     try {
-      await axios.delete(`http://13.232.209.194/posts/${postId}`);
+      await axios.delete(`/api/posts/${postId}`);
       setToastMessage('Post deleted successfully');
       setToastType('success');
       setShowToast(true);

@@ -42,7 +42,7 @@ const StartupCreation = () => {
 
   const [currentUserIncluded, setCurrentUserIncluded] = useState(false);
 
-  const API_BASE_URL = 'http://13.232.209.194';
+  const API_BASE_URL = '/api';
 
   const mockFounders = [
     { _id: '1', fullName: 'John Smith', role: 'Founder' },

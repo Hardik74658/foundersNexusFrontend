@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BACKEND_USERS_URL = 'http://13.232.209.194/users/';
+const BACKEND_USERS_URL = '/api/users/';
 const TALKJS_APP_ID = 'tPZa3YK4';
 const TALKJS_SECRET = 'sk_test_WnPpMOzDInijpGLCH6dixVdMeWOcdUBL';
 

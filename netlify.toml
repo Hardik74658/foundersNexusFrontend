@@ -9,17 +9,24 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    # Security headers - modified to allow HTTP connections
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' http://13.232.209.194 http://13.232.209.194:80 http://13.232.209.194:* ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
-    Referrer-Policy = "no-referrer-when-downgrade"
+    # Updated CSP to allow TalkJS and fix mixed content issues
+    Content-Security-Policy = "default-src 'self' https: http:; connect-src 'self' https: http: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.talkjs.com; style-src 'self' 'unsafe-inline' https://cdn.talkjs.com; img-src 'self' data: https: http:; font-src 'self' data: https:"
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
-    # Remove upgrade-insecure-requests directive
+    Referrer-Policy = "no-referrer-when-downgrade"
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
     Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-    
+
+# Proxy API calls to avoid CORS and mixed content issues
+[[redirects]]
+  from = "/api/*"
+  to = "/api:80/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+
 # Redirect all requests to index.html for SPA routing
 [[redirects]]
   from = "/*"

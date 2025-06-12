@@ -25,7 +25,7 @@ import {
   DocumentPlusIcon,
 } from '@heroicons/react/24/outline';
 
-const API_URL = 'http://13.232.209.194';
+const API_URL = '/api';
 
 export default function Pitch() {
   const user = useSelector((state) => state.auth.user);

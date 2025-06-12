@@ -36,11 +36,11 @@ export default function Users() {
     try {
       let endpoint;
       if (selectedTab === 'founders') {
-        endpoint = `http://13.232.209.194/users/founders/`;
+        endpoint = `/api/users/founders/`;
       } else if (selectedTab === 'investors') {
-        endpoint = `http://13.232.209.194/users/investors/`;
+        endpoint = `/api/users/investors/`;
       } else {
-        endpoint = `http://13.232.209.194/users/`;
+        endpoint = `/api/users/`;
       }
       
       const now = new Date();
@@ -146,15 +146,15 @@ export default function Users() {
     try {
       console.log("Fetching all counts...");
       const promises = [
-        axios.get('http://13.232.209.194/users/founders/').catch(err => {
+        axios.get('/api/users/founders/').catch(err => {
           console.error("Error fetching founders:", err);
           return { data: [] };
         }),
-        axios.get('http://13.232.209.194/users/investors/').catch(err => {
+        axios.get('/api/users/investors/').catch(err => {
           console.error("Error fetching investors:", err);
           return { data: [] };
         }),
-        axios.get('http://13.232.209.194/users/').catch(err => {
+        axios.get('/api/users/').catch(err => {
           console.error("Error fetching all users:", err);
           return { data: [] };
         })
