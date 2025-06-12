@@ -36,7 +36,7 @@ const ProfileHeader = ({ user, openPostModal }) => {
     if (!currentUserId) return;
     setLoading(true);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/users/${user._id}/${currentUserId}`, {
+      const response = await axios.get(`/api/users/${user._id}/${currentUserId}`, {
         headers: { accept: 'application/json' }
       });
       const message = response.data.message;
@@ -80,9 +80,9 @@ const ProfileHeader = ({ user, openPostModal }) => {
     try {
       let endpoint = "";
       if (type === "followers") {
-        endpoint = `http://127.0.0.1:8000/users/${user._id}/followers`;
+        endpoint = `/api/users/${user._id}/followers`;
       } else {
-        endpoint = `http://127.0.0.1:8000/users/${user._id}/following`;
+        endpoint = `/api/users/${user._id}/following`;
       }
       const res = await axios.get(endpoint, { headers: { accept: 'application/json' } });
       setModalList(res.data[type]);
