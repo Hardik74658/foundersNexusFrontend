@@ -210,7 +210,7 @@ const AdminDashboard = () => {
       setLoading(true);
       try {
         // Fetch all users
-        const usersResponse = await axios.get('htttp://http://13.232.209.194/users/');
+        const usersResponse = await axios.get('htttp://13.232.209.194/users/');
         const usersData = usersResponse.data;
         setUsers(usersData);
         
@@ -238,7 +238,7 @@ const AdminDashboard = () => {
         });
 
         // Fetch startups
-        const startupsResponse = await axios.get('htttp://http://13.232.209.194/startups/');
+        const startupsResponse = await axios.get('htttp://13.232.209.194/startups/');
         const startupsData = startupsResponse.data;
         setStartups(startupsData);
         

@@ -36,11 +36,11 @@ export default function Users() {
     try {
       let endpoint;
       if (selectedTab === 'founders') {
-        endpoint = `htttp://http://13.232.209.194/users/founders/`;
+        endpoint = `htttp://13.232.209.194/users/founders/`;
       } else if (selectedTab === 'investors') {
-        endpoint = `htttp://http://13.232.209.194/users/investors/`;
+        endpoint = `htttp://13.232.209.194/users/investors/`;
       } else {
-        endpoint = `htttp://http://13.232.209.194/users/`;
+        endpoint = `htttp://13.232.209.194/users/`;
       }
       
       const now = new Date();
@@ -146,15 +146,15 @@ export default function Users() {
     try {
       console.log("Fetching all counts...");
       const promises = [
-        axios.get('htttp://http://13.232.209.194/users/founders/').catch(err => {
+        axios.get('htttp://13.232.209.194/users/founders/').catch(err => {
           console.error("Error fetching founders:", err);
           return { data: [] };
         }),
-        axios.get('htttp://http://13.232.209.194/users/investors/').catch(err => {
+        axios.get('htttp://13.232.209.194/users/investors/').catch(err => {
           console.error("Error fetching investors:", err);
           return { data: [] };
         }),
-        axios.get('htttp://http://13.232.209.194/users/').catch(err => {
+        axios.get('htttp://13.232.209.194/users/').catch(err => {
           console.error("Error fetching all users:", err);
           return { data: [] };
         })
