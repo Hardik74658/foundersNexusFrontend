@@ -3,9 +3,9 @@
  */
 import axios from 'axios';
 
-// Read environment variables
-const useProxy = process.env.VITE_USE_PROXY === 'true';
-const apiUrl = process.env.VITE_API_URL;
+// Read environment variables - fixed to work with Vite's import.meta approach
+const useProxy = import.meta.env.VITE_USE_PROXY === 'true';
+const apiUrl = import.meta.env.VITE_API_URL || 'http://13.232.209.194:80';
 
 /**
  * Creates the appropriate URL for API calls
@@ -28,6 +28,15 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+});
+
+// Add request interceptor to handle URLs
+api.interceptors.request.use(config => {
+  // If the URL doesn't start with http or /, use the getApiUrl helper
+  if (!config.url.startsWith('http') && !config.url.startsWith('/')) {
+    config.url = getApiUrl(config.url);
+  }
+  return config;
 });
 
 export default api;
