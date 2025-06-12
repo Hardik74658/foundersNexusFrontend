@@ -48,7 +48,7 @@ function Chat() {
         } else {
           const userId = localStorage.getItem('userId');
           if (userId) {
-            const res = await axios.get(`http://localhost:8000/users/${userId}`);
+            const res = await axios.get(`htttp://http://13.232.209.194/users/${userId}`);
             if (isMounted) setCurrentUser(res.data);
           } else {
             setError('No current user found.');
@@ -73,7 +73,7 @@ function Chat() {
         return;
       }
       try {
-        const res = await axios.get(`http://localhost:8000/users/${otherUserId}`);
+        const res = await axios.get(`htttp://http://13.232.209.194/users/${otherUserId}`);
         if (isMounted) setOtherUser(res.data);
       } catch {
         setError('Failed to load other user.');
@@ -95,7 +95,7 @@ function Chat() {
   // Fetch user list for selector
   useEffect(() => {
     if (!otherUserId && currentUser) {
-      axios.get('http://localhost:8000/users/')
+      axios.get('htttp://http://13.232.209.194/users/')
         .then(res => {
           const filtered = (res.data.results || res.data || []).filter(u => u._id !== (currentUser._id || currentUser.id));
           setUserList(filtered);

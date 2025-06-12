@@ -36,7 +36,7 @@ const CreatePostModal = ({ isOpen, onClose, userId, onPostCreated }) => {
         console.log(`${key}:`, value);
       }
 
-      const res = await axios.post("http://localhost:8000/posts/", formData, {
+      const res = await axios.post("htttp://http://13.232.209.194/posts/", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

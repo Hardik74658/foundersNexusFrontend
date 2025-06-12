@@ -40,7 +40,7 @@ const EditProfile = () => {
 
         // Fetch basic user data
         const response = await axios.get(
-          `http://localhost:8000/users/${userFromRedux.id}`,
+          `htttp://http://13.232.209.194/users/${userFromRedux.id}`,
           { headers }
         );
         const userData = response.data;
@@ -53,7 +53,7 @@ const EditProfile = () => {
         if (role === 'founder') {
           try {
             const founderResponse = await axios.get(
-              `http://localhost:8000/users/entrepreneurs/${userData._id}`,
+              `htttp://http://13.232.209.194/users/entrepreneurs/${userData._id}`,
               { headers }
             );
             additionalDetails = { entrepreneurDetails: founderResponse.data };
@@ -64,7 +64,7 @@ const EditProfile = () => {
         } else if (role === 'investor') {
           try {
             const investorResponse = await axios.get(
-              `http://localhost:8000/users/investors/${userData._id}`,
+              `htttp://http://13.232.209.194/users/investors/${userData._id}`,
               { headers }
             );
             additionalDetails = { investorDetails: investorResponse.data };
@@ -313,7 +313,7 @@ const EditProfile = () => {
           };
 
           await axios.put(
-            `http://localhost:8000/users/${user._id}`,
+            `htttp://http://13.232.209.194/users/${user._id}`,
             userDetails,
             { headers }
           );
@@ -339,7 +339,7 @@ const EditProfile = () => {
             };
 
             await axios.put(
-              `http://localhost:8000/users/entrepreneurs/${user._id}`,
+              `htttp://http://13.232.209.194/users/entrepreneurs/${user._id}`,
               updatedFounderDetails,
               { headers }
             );
@@ -355,7 +355,7 @@ const EditProfile = () => {
             };
 
             await axios.put(
-              `http://localhost:8000/users/investors/${user._id}`,
+              `htttp://http://13.232.209.194/users/investors/${user._id}`,
               updatedInvestorDetails,
               { headers }
             );

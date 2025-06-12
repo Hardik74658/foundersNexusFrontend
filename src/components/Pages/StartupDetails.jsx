@@ -21,7 +21,7 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'htttp://http://13.232.209.194';
 
 const StartupDetails = () => {
   const { id } = useParams(); // Get startup ID from URL
