@@ -15,7 +15,7 @@ const Posts = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/posts/?page=${page}`);
+      const response = await axios.get(`/api/posts/?page=${page}`);
       const newPosts = response.data;
       
       if (Array.isArray(newPosts)) {
@@ -79,7 +79,7 @@ const Posts = () => {
     );
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/posts/${postId}/like/${userId}`);
+      const response = await axios.post(`/api/posts/${postId}/like/${userId}`);
       console.log(response.data.message);
     } catch (error) {
       console.error('Error toggling like:', error);
