@@ -51,11 +51,16 @@ const api = axios.create({
 
 // Add request interceptor to handle URLs
 api.interceptors.request.use(config => {
+  // If the URL already has /api/ prefix, don't modify it
+  if (config.url.startsWith('/api/')) {
+    return config;
+  }
+  
   // If the URL doesn't start with http or /, use the getApiUrl helper
   if (!config.url.startsWith('http') && !config.url.startsWith('/')) {
     config.url = getApiUrl(config.url);
-  } else if (config.url.startsWith('/') && !config.url.startsWith('/api/')) {
-    // If it starts with / but not with /api/, add the /api prefix
+  } else if (config.url.startsWith('/')) {
+    // If it starts with /, add the /api prefix
     config.url = `/api${config.url}`;
   }
   return config;

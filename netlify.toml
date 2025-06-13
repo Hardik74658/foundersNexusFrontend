@@ -16,7 +16,7 @@
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "no-referrer-when-downgrade"
 
-# Proxy API calls to avoid CORS and mixed content issues - Fixed to use the correct paths
+# Proxy API calls to avoid CORS and mixed content issues - Fixed to properly handle API paths
 [[redirects]]
   from = "/api/*"
   to = "http://13.232.209.194:80/:splat"
